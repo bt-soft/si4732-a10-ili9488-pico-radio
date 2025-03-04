@@ -46,6 +46,8 @@ SI4735 si4735;
 #include <patch_full.h>                                            // SSB patch for whole SSBRX full download
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
+#include "ConfigManager.h"
+
 /**
  * Hardware timer interrupt service routine
  * @param t Timer pointer
@@ -203,6 +205,19 @@ void setup() {
 
     // Képernyő kirajzolása
     drawScreen();
+
+    MyConfig_t myConfig;
+
+    // Beolvasás vagy beállítás
+    bool valid = ConfigManager<MyConfig_t>::getOrSet(MyConfig);
+    if (valid) {
+        Serial.println("Config loaded successfully!");
+    } else {
+        Serial.println("Using default config.");
+    }
+    // Módosíthatod a konfigurációs adatokat, majd elmentheted
+    MyConfig.someValue = 100;
+    ConfigManager<MyConfig_t>::set(MyConfig);
 }
 
 /**
