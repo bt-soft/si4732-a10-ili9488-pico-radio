@@ -27,9 +27,6 @@ template <class T>
 class ConfigManager {
 
 private:
-    static unsigned long lastSaveTime;
-    static bool hasChanges;
-
     const T data;       // Konfigurációs adatok
     const uint16_t crc; // CRC érték
 
@@ -133,13 +130,13 @@ public:
     //  */
     // template <typename T>
     // static void updateConfig(int address, const T &newConfig) {
-
+    //    static unsigned long lastSaveTime;
+    //    static bool hasChanges;
     //     static T cachedConfig;
     //     if (memcmp(&cachedConfig, &newConfig, sizeof(T)) != 0) {
     //         cachedConfig = newConfig;
     //         hasChanges = true;
     //     }
-
     //     // Ha az adat változott, és eltel 3 perc az utolsó mentés óta, akkor mentjük
     //     if (hasChanges && (millis() - lastSaveTime > 180000)) { // 3 perc eltelt
     //         saveConfig(address, cachedConfig);
