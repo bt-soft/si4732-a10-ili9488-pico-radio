@@ -46,7 +46,8 @@ SI4735 si4735;
 #include <patch_full.h>                                            // SSB patch for whole SSBRX full download
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
-#include "ConfigManager.h"
+#include "ConfigStore.h"
+ConfigStore configStore;
 
 /**
  * Hardware timer interrupt service routine
@@ -167,13 +168,17 @@ void setup() {
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
 
-    /*
-    tft.setTextColor(TFT_WHITE);
-    tft.drawString("Nyisd meg a soros portot!", 0, 0);
-    while (!Serial) {
-    }
-    tft.fillScreen(TFT_BLACK);
-    */
+    // Várakozás a soros port megnyitására
+    debugWaitForSerial(&tft, &beeper);
+
+    // konfig betöltése
+    configStore.load();
+    DEBUG("Konfig betöltve: %s", pConfig->name);
+
+    // Módosíthatod a konfigurációs adatokat, majd elmentheted
+    SAFE_STRCPY(pConfig->name, "Sanyi");
+    DEBUG("Konfig átállítva: %s", pConfig->name);
+
     // Beállítjuk a touch scren-t
     TouchCalibrate::calibrate(&tft /*, true , true*/); // állítsd true-ra a 2. paramétert, ha újra akarod kalibrálni
 
@@ -205,19 +210,6 @@ void setup() {
 
     // Képernyő kirajzolása
     drawScreen();
-
-    MyConfig_t myConfig;
-
-    // Beolvasás vagy beállítás
-    bool valid = ConfigManager<MyConfig_t>::getOrSet(MyConfig);
-    if (valid) {
-        Serial.println("Config loaded successfully!");
-    } else {
-        Serial.println("Using default config.");
-    }
-    // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    MyConfig.someValue = 100;
-    ConfigManager<MyConfig_t>::set(MyConfig);
 }
 
 /**

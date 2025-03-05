@@ -1,6 +1,8 @@
 #ifndef __BEEPER_H__
 #define __BEEPER_H__
 
+#include <Arduino.h>
+
 /**
  * Hangjelzés osztály
  */
