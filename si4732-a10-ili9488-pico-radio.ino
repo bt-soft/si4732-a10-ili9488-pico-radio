@@ -1,10 +1,17 @@
 #include <Arduino.h>
 
 //------------------- Pins
+// I2C si4735
 #define PIN_SI4735_I2C_SDA 8
 #define PIN_SI4735_I2C_SCL 9
 #define PIN_SI4735_RESET 10
 
+// Rotary Encoder
+#define PIN_ENCODER_CLK 16
+#define PIN_ENCODER_DT 17
+#define PIN_ENCODER_SW 18
+
+// Others
 #define PIN_DISPLAY_LED 21
 #define PIN_AUDIO_MUTE 20
 #define PIN_BEEPER 22
@@ -23,9 +30,6 @@ ButtonState_t buttonState;         /// @brief Megnyomott gomb állapota
 
 //------------------- Rotary Encoder
 #include "RotaryEncoder.h"
-#define PIN_ENCODER_CLK 16
-#define PIN_ENCODER_DT 17
-#define PIN_ENCODER_SW 18
 RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN_ENCODER_SW);
 RotaryEncoder::RotaryEncoderResult rotaryEncoderResult;
 
@@ -44,6 +48,7 @@ SI4735 si4735;
 #include <patch_full.h>                                            // SSB patch for whole SSBRX full download
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
+//------------------- EEPROM Config
 #include "ConfigStore.h"
 ConfigStore configStore;
 
