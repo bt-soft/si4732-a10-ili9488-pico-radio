@@ -13,6 +13,7 @@ struct Config_t {
 };
 // Konfigurációs változó deklarációja
 extern Config_t *pConfig;
+extern Config_t DEFAULT_CONFIG;
 
 /**
  * Konfigurációs adatok kezelése
@@ -25,6 +26,14 @@ public:
      * @param pData Pointer a konfigurációs adatokhoz
      */
     ConfigStore() : StoreBase<Config_t>(pConfig) {}
+
+    /**
+     * Alapértelmezett adatok betöltése
+     */
+    void loadDefaults() override {
+        memcpy(pConfig, &DEFAULT_CONFIG, sizeof(Config_t));
+        DEBUG("Default config loaded\n");
+    }
 };
 
 #endif // __CONFIG_H

@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Streaming.h>
 
 //------------------- Pins
 #define PIN_SI4735_I2C_SDA 8
@@ -11,13 +10,12 @@
 #define PIN_BEEPER 22
 
 //------------------ TFT
-#include <TFT_eSPI.h>                // TFT_eSPI könyvtár
-TFT_eSPI tft;                        // TFT objektum
-TFT_eSprite spr = TFT_eSprite(&tft); // Sprite objektum
+#include <TFT_eSPI.h> // TFT_eSPI könyvtár
+TFT_eSPI tft;         // TFT objektum
+// TFT_eSprite spr = TFT_eSprite(&tft); // Sprite objektum
 
 #include "MultiButtonDialog.h"
 #include "PopUpDialog.h"
-#include "touchCalibrate.h"
 
 PopupBase *dialog = nullptr;       /// @brief dialógus pointer
 const char *buttonLabel = nullptr; /// @brief Megnyomott gomb label
@@ -79,9 +77,8 @@ TftButton screenButtons[] = {
     TftButton(&tft, BUTTON_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, buttonCallback),
     TftButton(&tft, BUTTON_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("FS List"), ButtonType::PUSHABLE, buttonCallback),
-    TftButton(&tft, BUTTON_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
-    TftButton(&tft, BUTTON_X(5), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
+    TftButton(&tft, BUTTON_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, buttonCallback, ButtonState::ON),
+    TftButton(&tft, BUTTON_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, buttonCallback) //
 };
 
 //---------------------------
@@ -126,10 +123,10 @@ void handleScreenButtonPress() {
         createMultiButtonDialog(reinterpret_cast<const char **>(buttonLabels), ARRAY_ITEM_COUNT(buttonLabels));
 
     } else if (strcmp("FS List", buttonLabel) == 0) {
-        TouchCalibrate::listAllFilesInDir();
+        // TouchCalibrate::listAllFilesInDir();
 
     } else {
-        Serial << F("Screen button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
+        DEBUG("Screen button Label: '%s', állapot változás: %s", buttonLabel, TftButton::decodeState(buttonState));
     }
 }
 
@@ -145,7 +142,7 @@ void drawScreen() {
     }
 
     // Az 5.-et letiltjuk
-    screenButtons[5].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
+    // screenButtons[5].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
 /**
@@ -168,19 +165,23 @@ void setup() {
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
 
-    // Várakozás a soros port megnyitására
-    debugWaitForSerial(&tft, &beeper);
+    // // Várakozás a soros port megnyitására
+    // debugWaitForSerial(&tft, &beeper);
 
     // konfig betöltése
     configStore.load();
-    DEBUG("Konfig betöltve: %s", pConfig->name);
-
+    DEBUG("Konfig load: %s\n", pConfig->name);
     // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    SAFE_STRCPY(pConfig->name, "Sanyi");
-    DEBUG("Konfig átállítva: %s", pConfig->name);
+    safeStrCpy(pConfig->name, "Sanyi");
+    DEBUG("Konfig átállítva: %s\n", pConfig->name);
 
     // Beállítjuk a touch scren-t
-    TouchCalibrate::calibrate(&tft /*, true , true*/); // állítsd true-ra a 2. paramétert, ha újra akarod kalibrálni
+    if (isZeroArray(pConfig->tftCalibrateData)) {
+        beeper.error();
+        DEBUG("TFT Touch calibration needed!\n");
+        tftTouchCalibrate(&tft, pConfig->tftCalibrateData);
+    }
+    tft.setTouch(pConfig->tftCalibrateData);
 
     // si473x
     Wire.setSDA(PIN_SI4735_I2C_SDA); // I2C for SI4735 SDA
@@ -188,12 +189,12 @@ void setup() {
     Wire.begin();
 
     // Si4735 inicializálása
-    beeper.tick();
     int16_t si4735Addr = si4735.getDeviceI2CAddress(PIN_SI4735_RESET);
     if (si4735Addr == 0) {
         tft.setTextColor(TFT_RED, TFT_BLACK);
-        tft.print(F("Si4735 not detected"));
-        Serial << F("Si4735 not detected") << endl;
+        const char *txt = "Si4735 not detected";
+        tft.print(txt);
+        DEBUG(txt);
         beeper.error();
         while (true) // nem megyünk tovább
             ;
@@ -210,6 +211,7 @@ void setup() {
 
     // Képernyő kirajzolása
     drawScreen();
+    beeper.tick();
 }
 
 /**
@@ -222,10 +224,10 @@ void loop() {
     if (rotaryEncoderResult.direction != RotaryEncoder::Direction::NONE) {
         switch (rotaryEncoderResult.direction) {
         case RotaryEncoder::Direction::UP:
-            Serial << "Rotary Encoder UP" << endl;
+            DEBUG("Rotary Encoder UP\n");
             break;
         case RotaryEncoder::Direction::DOWN:
-            Serial << "Rotary Encoder DOWN" << endl;
+            DEBUG("Rotary Encoder DOWN\n");
             break;
         }
     }
@@ -252,7 +254,7 @@ void loop() {
 
             } else {
                 // Van dialog és megnyomtak rajta egy gombot
-                Serial << F("Dialóg button Label: '") << buttonLabel << F("' állapot változás: ") << TftButton::decodeState(buttonState) << endl;
+                DEBUG("Dialóg button Label: '%s', állapot változás: %s", buttonLabel, TftButton::decodeState(buttonState));
 
                 // 'X'-el zárták be a dialógot?
                 if (dialog and strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {
@@ -272,7 +274,7 @@ void loop() {
             buttonLabel = nullptr;
         }
     } catch (...) {
-        Serial << "Hiba történt a touch esemény feldolgozásakor!" << endl;
+        DEBUG("Hiba történt a touch esemény feldolgozásakor!\n");
         buttonLabel = nullptr;
     }
 }

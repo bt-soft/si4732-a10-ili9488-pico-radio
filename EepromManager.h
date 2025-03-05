@@ -1,40 +1,33 @@
 #ifndef __EEPROMMANAGER_H
 #define __EEPROMMANAGER_H
 
-// https://github.com/bimac/EEPstore/blob/main/src/EEPstore.h
+// inspiration from https://github.com/bimac/EEPstore/blob/main/src/EEPstore.h
 
 #include "utils.h"
 #include <CRC.h>
 #include <EEPROM.h>
 
 #ifndef EEPROM_SIZE
-#define EEPROM_SIZE 2048 // Alapértelmezett érték, de lehet 512-4096 között módosítani
+#define EEPROM_SIZE 2048 // Alapértelmezett 2K érték, de lehet 512-4096 között módosítani
 #endif
 
 /**
  * EEPROM kezelő osztály
  * A konfigurációs adatokat az EEPROM-ba menti és onnan tölti be
- * A konfigurációs adatokat egy struktúrában tárolja
- * A struktúra mérete nem lehet nagyobb, mint az EEPROM mérete
- * A struktúra elemeinek típusa csak az EEPROM-ban tárolható típusok lehetnek
- * - uint8_t, int8_t, uint16_t, int16_t, uint32_t, int32_t, float, double
- * - struktúra, amely csak az EEPROM-ban tárolható típusokat tartalmaz
- * - tömbök, amelyek csak az EEPROM-ban tárolható típusokat tartalmaznak
- * - A struktúra elemeinek neve nem lehet ugyanaz, mint a struktúra elemeinek neve
  */
 template <class T>
 class EepromManager {
 
 private:
     const T data;       // Konfigurációs adatok
-    const uint16_t crc; // CRC érték
+    const uint16_t crc; // Az adatok CRC elleőrző összege
 
 public:
     /**
      * Konstruktor
      * @tparam T a konfigurációs adatok típusa
      * @param dataRef a konfigurációs adatok referenciája
-     * @note A konstruktorban kiszámolja a CRC-t
+     * @note A konstruktorban kiszámoljuk a CRC-t is
      *
      */
     EepromManager(const T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
@@ -60,7 +53,7 @@ public:
 
         // Ha valid, akkor beállítjuk a dataRef-et
         if (valid) {
-            DEBUG("Az EEPROM-ból betöltött adatok érvényesek");
+            DEBUG("Az EEPROM load ok\n");
             dataRef = storage.data;
         }
 
@@ -77,17 +70,20 @@ public:
      */
     inline static uint16_t load(T &dataRef, const uint16_t address = 0) {
 
+// Az RP2040 platformon az EEPROM.begin() nem szükséges
+#ifndef ARDUINO_ARCH_RP2040
         EEPROM.begin(EEPROM_SIZE); // EEPROM inicializálása
+#endif
 
         // Kiolvassuk az adatokat az EEPROM-ból
         uint16_t crc32 = getIfValid(dataRef, address);
 
         // Ha NEM valid (crc32 == 0), akkor lementjük az EEPROM-ba a dataRef (mint default) értékeit
         if (crc32 == 0) {
-            DEBUG("EEPROM-ból betöltött adatok érvénytelenek, lementjük az alapértelmezett értékeket");
+            DEBUG("EEPROM data invalid, save defaults!\n");
             save(dataRef, address);
         } else {
-            DEBUG("EEPROM betöltés OK");
+            DEBUG("EEPROM load OK\n");
         }
 
         return crc32;
@@ -98,7 +94,6 @@ public:
      * @tparam T a konfigurációs adatok típusa
      * @param address az EEPROM címe
      * @param dataRef a konfigurációs adatok referenciája
-     * @note A konfigurációs adatokat csak akkor menti, ha változott
      *
      */
     inline static void save(const T &dataRef, const uint16_t address = 0) {
@@ -108,9 +103,12 @@ public:
 
         // Lementjük az adatokat + a crc-t az EEPROM-ba
         EEPROM.put(address, storage);
-        EEPROM.commit(); // ESP platformon szükséges!
 
-        DEBUG("EEPROM mentés OK");
+// Az RP2040 platformon az EEPROM.commit() nem szükséges
+#ifndef ARDUINO_ARCH_RP2040
+        EEPROM.commit(); // ESP platformon szükséges!
+#endif
+        DEBUG("EEPROM save OK");
     }
 };
 

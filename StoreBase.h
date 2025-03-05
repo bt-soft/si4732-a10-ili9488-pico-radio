@@ -11,7 +11,7 @@ template <typename T>
 class StoreBase {
 
 private:
-    Ticker crcChecker;
+    // Ticker crcChecker;
     uint16_t lastCRC = 0;
     T *pData = nullptr;
 
@@ -36,6 +36,11 @@ public:
     virtual void load() {
         lastCRC = EepromManager<T>::load(*pData);
     }
+
+    /**
+     * Alapértelmezett adatok betöltése
+     */
+    virtual void loadDefaults() = 0;
 };
 
 #endif //__STOREBASE_H

@@ -16,23 +16,25 @@
 //--- Debug ---
 #define __DEBUG // Debug mód bekapcsolása
 #ifdef __DEBUG
-#define DEBUG(fmt, ...) Serial.printf_P(PSTR(fmt "\n") __VA_OPT__(, ) __VA_ARGS__)
+// #define DEBUG(fmt, ...) Serial.printf_P(PSTR(fmt "\n") __VA_OPT__(, ) __VA_ARGS__)
+#define DEBUG(fmt, ...) Serial.printf_P(PSTR(fmt) __VA_OPT__(, ) __VA_ARGS__)
 #else
 #define DEBUG(fmt, ...) // Üres makró, ha __DEBUG nincs definiálva
 #endif
 
 //--- Utils ---
-// /**
-//  * Biztonságos string másolás
-//  * @param dest cél string
-//  * @param src forrás string
-//  */
-#define SAFE_STRCPY(dest, src)                \
-    do {                                      \
-        strncpy(dest, src, sizeof(dest) - 1); \
-        dest[sizeof(dest) - 1] = '\0';        \
-    } while (0)
-void safeStrCpy(char *dest, char *src);
+
+/**
+ * Biztonságos string másolás
+ * @param dest cél string
+ * @param src forrás string
+ */
+template <typename T, size_t N>
+void safeStrCpy(T (&dest)[N], const T *src) {
+    // A strncpy használata a karakterlánc másolásához
+    strncpy(dest, src, N - 1); // Csak N-1 karaktert másolunk, hogy ne lépjük túl a cél tömböt
+    dest[N - 1] = '\0';        // Biztosítjuk, hogy a cél tömb nullával legyen lezárva
+}
 
 /**
  * Várakozás a soros port megnyitására
@@ -40,5 +42,21 @@ void safeStrCpy(char *dest, char *src);
  * @param beeper a Beeper példánya
  */
 void debugWaitForSerial(TFT_eSPI *pTft, Beeper *beeper);
+
+/**
+ * Tömb elemei nullák?
+ */
+template <typename T, size_t N>
+bool isZeroArray(T (&arr)[N]) {
+    for (size_t i = 0; i < N; ++i) {
+        if (arr[i] != 0) {
+            return false; // Ha bármelyik elem nem nulla, akkor false-t adunk vissza
+        }
+    }
+    return true; // Ha minden elem nulla, akkor true-t adunk vissza
+}
+
+//--- TFT ---
+void tftTouchCalibrate(TFT_eSPI *pTft, uint16_t (&calData)[5]);
 
 #endif // __UTILS_H
