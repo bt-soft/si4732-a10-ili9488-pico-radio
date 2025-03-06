@@ -32,10 +32,10 @@ public:
     Config() : StoreBase<Config_t>(), config(DEFAULT_CONFIG) {}
 
     /**
-     * Pointer az adattagra
+     * Referencia az adattagra
      */
-    Config_t *p() override {
-        return &config;
+    Config_t &p() override {
+        return config;
     };
 
     /**

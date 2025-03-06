@@ -19,20 +19,20 @@ public:
     /**
      * Pointer az adattagra
      */
-    virtual T *p() = 0;
+    virtual T &p() = 0;
 
     /**
      * Tárolt adatok mentése
      */
     virtual void save() {
-        EepromManager<T>::save(*p()); // dereferálás
+        EepromManager<T>::save(p());
     }
 
     /**
      * Tárolt adatok betöltése
      */
     virtual void load() {
-        lastCRC = EepromManager<T>::load(*p()); // dereferálás
+        lastCRC = EepromManager<T>::load(p()); // dereferálás
     }
 
     /**
@@ -45,20 +45,16 @@ public:
      * CRC ellenőrzés és mentés indítása ha szükséges
      */
     virtual void checkSave() final {
-        if (!p()) {
-            DEBUG("pData is nullptr, aborting checkSave\n");
-            return;
-        }
 
         DEBUG("checkSave start\n");
 
-        uint16_t crc = calcCRC16((uint8_t *)p(), sizeof(T));
+        uint16_t crc = calcCRC16((uint8_t *)&p(), sizeof(T));
         if (lastCRC != crc) {
             DEBUG("CRC diff, need to save\n");
 
             digitalWrite(LED_BUILTIN, HIGH);
 
-            crc = EepromManager<T>::save(*p()); // dereferálás
+            crc = EepromManager<T>::save(p());
             lastCRC = crc;
 
             digitalWrite(LED_BUILTIN, LOW);
