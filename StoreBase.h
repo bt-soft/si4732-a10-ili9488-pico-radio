@@ -6,7 +6,7 @@
 #include <list>
 
 /**
- * Generikus ősosztály a mentés és betöltés funkciókhoz
+ * Generikus wrapper ősosztály a mentés és betöltés + CRC számítás funkciókhoz
  */
 template <typename T>
 class StoreBase {

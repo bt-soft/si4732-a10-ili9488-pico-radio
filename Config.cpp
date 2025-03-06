@@ -1,4 +1,4 @@
-#include "ConfigStore.h"
+#include "Config.h"
 
 /**
  * Alapértelmezett readonly konfigurációs adatok
