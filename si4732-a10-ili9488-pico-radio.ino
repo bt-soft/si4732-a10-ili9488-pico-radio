@@ -29,14 +29,13 @@ const char *buttonLabel = nullptr; /// @brief Megnyomott gomb label
 ButtonState_t buttonState;         /// @brief Megnyomott gomb állapota
 
 //------------------- Rotary Encoder
+// Pico Hardware timer a Rotary encoder olvasására
+#include <Ticker.h>
+Ticker rotaryTicker;
+
 #include "RotaryEncoder.h"
 RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN_ENCODER_SW);
 RotaryEncoder::RotaryEncoderResult rotaryEncoderResult;
-
-// Pico Hardware timer a Rotary encoder olvasására
-#include <RPi_Pico_TimerInterrupt.h>
-RPI_PICO_Timer ITimer1(1);
-#define TIMER1_INTERVAL_USEC 1000 * 5 // 5ms
 
 //------------------- beeper
 #include "Beeper.h"
@@ -51,15 +50,6 @@ static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_pa
 //------------------- EEPROM Config
 #include "ConfigStore.h"
 ConfigStore configStore;
-
-/**
- * Hardware timer interrupt service routine
- * @param t Timer pointer
- */
-bool hardwareTimerHandler1_ForRotary(struct repeating_timer *t) {
-    rotaryEncoder.service();
-    return true;
-}
 
 /**
  * Gombok callback
@@ -163,7 +153,11 @@ void setup() {
     // Rotary Encoder felhúzása
     rotaryEncoder.setDoubleClickEnabled(true);
     rotaryEncoder.setAccelerationEnabled(false);
-    ITimer1.attachInterruptInterval(TIMER1_INTERVAL_USEC, hardwareTimerHandler1_ForRotary); // Pico HW Timer1 beállítása
+
+    // Pico Ticker beállítása a Rotary Encoder olvasására
+    rotaryTicker.attach_ms(5, []() {
+        rotaryEncoder.service();
+    });
 
     // TFT inicializálása
     tft.init();
