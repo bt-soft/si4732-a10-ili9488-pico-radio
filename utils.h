@@ -4,6 +4,15 @@
 #include "Beeper.h"
 #include <TFT_eSPI.h>
 
+//--- Debug ---
+#define __DEBUG // Debug mód bekapcsolása
+
+#ifdef __DEBUG
+// Bekapcsoljuk a beépített LED-et, az EEPROM mentés jelzésére, csak DEBUG módban
+// A StoreBase használja
+#define LED_PIN LED_BUILTIN
+#endif
+
 //--- TFT colors ---
 #define TFT_COLOR(r, g, b) (((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3))
 // #define COMPLEMENT_COLOR(color) \
@@ -14,7 +23,6 @@
 #define ARRAY_ITEM_COUNT(array) (sizeof(array) / sizeof(array[0]))
 
 //--- Debug ---
-#define __DEBUG // Debug mód bekapcsolása
 #ifdef __DEBUG
 // #define DEBUG(fmt, ...) Serial.printf_P(PSTR(fmt "\n") __VA_OPT__(, ) __VA_ARGS__)
 #define DEBUG(fmt, ...) Serial.printf_P(PSTR(fmt) __VA_OPT__(, ) __VA_ARGS__)

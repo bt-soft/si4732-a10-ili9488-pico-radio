@@ -24,16 +24,22 @@ void debugWaitForSerial(TFT_eSPI *pTft, Beeper *beeper) {
  */
 void tftTouchCalibrate(TFT_eSPI *pTft, uint16_t (&calData)[5]) {
 
-    const __FlashStringHelper *txt = F("Erintsd meg a sarkokat a jelzett helyeken!\n");
     pTft->fillScreen(TFT_BLACK);
-    pTft->setCursor((pTft->width() - pTft->textWidth(txt)) / 2, pTft->height() / 2 - 40);
     pTft->setTextFont(2);
-    pTft->setTextSize(1);
-    pTft->setTextColor(TFT_WHITE, TFT_BLACK);
+    pTft->setTextSize(2);
+    const __FlashStringHelper *txt = F("TFT touch calibration required\n");
+    pTft->setCursor((pTft->width() - pTft->textWidth(txt)) / 2, pTft->height() / 2 - 60);
+    pTft->setTextColor(TFT_ORANGE, TFT_BLACK);
     pTft->println(txt);
 
-    // TFT_eSPI kalibráció indítása
-    pTft->calibrateTouch(calData, TFT_MAGENTA, TFT_BLACK, 15);
+    pTft->setTextSize(1);
+    txt = F("Touch the corners at the indicated places!\n");
+    pTft->setCursor((pTft->width() - pTft->textWidth(txt)) / 2, pTft->height() / 2 + 20);
+    pTft->setTextColor(TFT_YELLOW, TFT_BLACK);
+    pTft->println(txt);
+
+    // TFT_eSPI 'bóti' kalibráció indítása
+    pTft->calibrateTouch(calData, TFT_YELLOW, TFT_BLACK, 15);
 
     txt = F("Kalibracio befejezodott!");
     pTft->fillScreen(TFT_BLACK);

@@ -171,7 +171,7 @@ void setup() {
     tft.fillScreen(TFT_BLACK);
 
     // // Várakozás a soros port megnyitására
-    // debugWaitForSerial(&tft, &beeper);
+    debugWaitForSerial(&tft, &beeper);
 
     // konfig betöltése
     configStore.load();
