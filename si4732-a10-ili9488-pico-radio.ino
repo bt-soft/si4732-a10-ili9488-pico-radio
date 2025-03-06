@@ -48,7 +48,7 @@ SI4735 si4735;
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
 //------------------- EEPROM Config
-#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 5 // 5 perc
+#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 1 // 5 perc
 Ticker eepromSaveChecker;
 // Core lock az EEPROM írásánál
 auto_init_mutex(saveEepromMutex);

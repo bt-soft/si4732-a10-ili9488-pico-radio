@@ -19,8 +19,8 @@ template <class T>
 class EepromManager {
 
 private:
-    const T data;       // Konfigurációs adatok
-    const uint16_t crc; // Az adatok CRC ellenőrző összege
+    T data;       // Konfigurációs adatok
+    uint16_t crc; // Az adatok CRC ellenőrző összege
 
 public:
     /**
@@ -30,7 +30,7 @@ public:
      * @note A konstruktorban kiszámoljuk a CRC-t is
      *
      */
-    EepromManager(const T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
+    EepromManager(T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
     }
 
     /**
@@ -70,10 +70,8 @@ public:
      */
     inline static uint16_t load(T &dataRef, const uint16_t address = 0) {
 
-// Az RP2040 platformon az EEPROM.begin() nem szükséges
-#ifndef ARDUINO_ARCH_RP2040
-        EEPROM.begin(EEPROM_SIZE); // EEPROM inicializálása
-#endif
+        // Az RP2040 platformon az EEPROM.begin() nem szükséges
+        EEPROM.begin(EEPROM_SIZE);
 
         // Kiolvassuk az adatokat az EEPROM-ból
         uint16_t crc32 = getIfValid(dataRef, address);
@@ -96,7 +94,10 @@ public:
      * @param dataRef a konfigurációs adatok referenciája
      * @return adatok CRC16 ellenőrző összege
      */
-    inline static uint16_t save(const T &dataRef, const uint16_t address = 0) {
+    inline static uint16_t save(T &dataRef, const uint16_t address = 0) {
+
+        // Az RP2040 platformon az EEPROM.begin() nem szükséges
+        EEPROM.begin(EEPROM_SIZE);
 
         // Létrehozunk egy saját példányt, közben a crc is számítódik
         EepromManager<T> storage(dataRef);
@@ -104,10 +105,9 @@ public:
         // Lementjük az adatokat + a crc-t az EEPROM-ba
         EEPROM.put(address, storage);
 
-// Az RP2040 platformon az EEPROM.commit() nem szükséges
-#ifndef ARDUINO_ARCH_RP2040
-        EEPROM.commit(); // ESP platformon szükséges!
-#endif
+        // Az RP2040 platformon az EEPROM.commit() nem szükséges
+        EEPROM.commit();
+
         DEBUG("EEPROM save OK\n");
 
         return storage.crc;
