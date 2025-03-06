@@ -29,7 +29,7 @@ protected:
     /**
      * Referencia az adattagra, csak az ős használja
      */
-    Config_t &p() override {
+    Config_t &r() override {
         return data;
     };
 

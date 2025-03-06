@@ -19,21 +19,21 @@ protected:
     /**
      * Referencia az adattagra, ez az ős használja
      */
-    virtual T &p() = 0;
+    virtual T &r() = 0;
 
 public:
     /**
      * Tárolt adatok mentése
      */
     virtual void save() {
-        EepromManager<T>::save(p());
+        EepromManager<T>::save(r());
     }
 
     /**
      * Tárolt adatok betöltése
      */
     virtual void load() {
-        lastCRC = EepromManager<T>::load(p());
+        lastCRC = EepromManager<T>::load(r());
     }
 
     /**
@@ -47,11 +47,11 @@ public:
      */
     virtual void checkSave() final {
 
-        uint16_t crc = calcCRC16((uint8_t *)&p(), sizeof(T));
+        uint16_t crc = calcCRC16((uint8_t *)&r(), sizeof(T));
         if (lastCRC != crc) {
 
             digitalWrite(LED_BUILTIN, HIGH);
-            crc = EepromManager<T>::save(p());
+            crc = EepromManager<T>::save(r());
             lastCRC = crc;
             digitalWrite(LED_BUILTIN, LOW);
 
