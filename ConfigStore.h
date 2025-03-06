@@ -11,9 +11,10 @@ struct Config_t {
     float anotherValue;
     char name[10];
 };
-// Konfigurációs változó deklarációja
-extern Config_t *pConfig;
-extern Config_t DEFAULT_CONFIG;
+
+// Alapértelmezett konfigurációs adatok (readonly, const)
+extern const Config_t DEFAULT_CONFIG;
+extern Config_t *pConfig; // A pConfig pointer, amely a config-ra mutat
 
 /**
  * Konfigurációs adatok kezelése
