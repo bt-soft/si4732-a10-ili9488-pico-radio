@@ -43,30 +43,20 @@ public:
     virtual void loadDefaults() = 0;
 
     /**
-     * CRC ellenőrzés és mentés indítása ha szükséges
+     * CRC ellenőrzés és mentés indítása, ha szükséges
      */
     virtual void checkSave() final {
 
-        DEBUG("checkSave start\n");
-
         uint16_t crc = calcCRC16((uint8_t *)&p(), sizeof(T));
         if (lastCRC != crc) {
-            DEBUG("CRC diff, need to save\n");
 
             digitalWrite(LED_BUILTIN, HIGH);
-
             crc = EepromManager<T>::save(p());
             lastCRC = crc;
-
             digitalWrite(LED_BUILTIN, LOW);
 
             DEBUG("EEPROM save end, crc = %d\n", crc);
-
-        } else {
-            DEBUG("No need to save EEPROM\n");
         }
-
-        DEBUG("checkSave end\n");
     }
 };
 
