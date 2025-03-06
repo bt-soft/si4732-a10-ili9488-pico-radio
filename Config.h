@@ -14,25 +14,28 @@ struct Config_t {
 
 // Alapértelmezett konfigurációs adatok (readonly, const)
 extern const Config_t DEFAULT_CONFIG;
-extern Config_t *pConfig; // A pConfig pointer, amely a config-ra mutat
 
 /**
  * Konfigurációs adatok kezelése
  */
-class ConfigStore : public StoreBase<Config_t> {
+class Config : public StoreBase<Config_t> {
+
+private:
+    // A 'config' változó, amely az alapértelmezett értékeket veszi fel, kívülről nem módosítható
+    Config_t config;
 
 public:
     /**
      * Konstruktor
      * @param pData Pointer a konfigurációs adatokhoz
      */
-    ConfigStore() : StoreBase<Config_t>(pConfig) {}
+    Config() : StoreBase<Config_t>(&config), config(DEFAULT_CONFIG) {}
 
     /**
      * Alapértelmezett adatok betöltése
      */
     void loadDefaults() override {
-        memcpy(pConfig, &DEFAULT_CONFIG, sizeof(Config_t));
+        memcpy(&config, &DEFAULT_CONFIG, sizeof(Config_t));
         DEBUG("Default config loaded\n");
     }
 };

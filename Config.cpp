@@ -10,9 +10,3 @@ const Config_t DEFAULT_CONFIG = {
     .anotherValue = 3.14,
     .name = "Default" //
 };
-
-// A 'config' változó, amely az alapértelmezett értékeket veszi fel, kívülről nem módosítható
-Config_t config = DEFAULT_CONFIG;
-
-// A pConfig pointert a config-ra állítjuk, ezen keresztül módosítható a config
-Config_t *pConfig = &config;

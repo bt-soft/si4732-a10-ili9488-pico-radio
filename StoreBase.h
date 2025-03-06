@@ -27,6 +27,13 @@ public:
     }
 
     /**
+     * Pointer az adattagra
+     */
+    virtual T *p() {
+        return pData;
+    };
+
+    /**
      * Tárolt adatok mentése
      */
     virtual void save() {

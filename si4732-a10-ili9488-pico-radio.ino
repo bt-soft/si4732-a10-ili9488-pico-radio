@@ -53,8 +53,8 @@ Ticker eepromSaveChecker;
 // Core lock az EEPROM írásánál
 auto_init_mutex(saveEepromMutex);
 
-#include "ConfigStore.h"
-ConfigStore configStore;
+#include "Config.h"
+Config config;
 
 /**
  * Gombok callback
@@ -176,23 +176,23 @@ void setup() {
     eepromSaveChecker.attach(EEPROM_SAVE_CHECK_INTERVAL_SECONDS, []() {
         // Lokkolunk, hogy ne tudjuk piszkálni a konfigot a mentés közben
         CoreMutex mtx(&saveEepromMutex);
-        configStore.checkSave();
+        config.checkSave();
     });
 
     // konfig betöltése
-    configStore.load();
-    DEBUG("Konfig load: %s\n", pConfig->name);
+    config.load();
+    DEBUG("Konfig load: %s\n", config.p()->name);
     // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    safeStrCpy(pConfig->name, "Sanyi");
-    DEBUG("Konfig átállítva: %s\n", pConfig->name);
+    safeStrCpy(config.p()->name, "Sanyi");
+    DEBUG("Konfig átállítva: %s\n", config.p()->name);
 
     // Beállítjuk a touch scren-t
-    if (isZeroArray(pConfig->tftCalibrateData)) {
+    if (isZeroArray(config.p()->tftCalibrateData)) {
         beeper.error();
         DEBUG("TFT Touch calibration needed!\n");
-        tftTouchCalibrate(&tft, pConfig->tftCalibrateData);
+        tftTouchCalibrate(&tft, config.p()->tftCalibrateData);
     }
-    tft.setTouch(pConfig->tftCalibrateData);
+    tft.setTouch(config.p()->tftCalibrateData);
 
     // si473x
     Wire.setSDA(PIN_SI4735_I2C_SDA); // I2C for SI4735 SDA
