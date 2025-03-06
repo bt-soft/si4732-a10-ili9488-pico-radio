@@ -20,7 +20,7 @@ class EepromManager {
 
 private:
     const T data;       // Konfigurációs adatok
-    const uint16_t crc; // Az adatok CRC elleőrző összege
+    const uint16_t crc; // Az adatok CRC ellenőrző összege
 
 public:
     /**
