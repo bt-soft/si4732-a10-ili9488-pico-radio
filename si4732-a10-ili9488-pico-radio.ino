@@ -126,7 +126,7 @@ void handleScreenButtonPress() {
         // TouchCalibrate::listAllFilesInDir();
 
     } else {
-        DEBUG("Screen button Label: '%s', állapot változás: %s", buttonLabel, TftButton::decodeState(buttonState));
+        DEBUG("Screen button Label: '%s', állapot változás: %s\n", buttonLabel, TftButton::decodeState(buttonState));
     }
 }
 
@@ -268,7 +268,7 @@ void loop() {
 
             } else {
                 // Van dialog és megnyomtak rajta egy gombot
-                DEBUG("Dialóg button Label: '%s', állapot változás: %s", buttonLabel, TftButton::decodeState(buttonState));
+                DEBUG("Dialóg button Label: '%s', állapot változás: %s\n", buttonLabel, TftButton::decodeState(buttonState));
 
                 // 'X'-el zárták be a dialógot?
                 if (dialog and strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {

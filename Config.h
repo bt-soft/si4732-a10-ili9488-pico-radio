@@ -29,7 +29,14 @@ public:
      * Konstruktor
      * @param pData Pointer a konfigurációs adatokhoz
      */
-    Config() : StoreBase<Config_t>(&config), config(DEFAULT_CONFIG) {}
+    Config() : StoreBase<Config_t>(), config(DEFAULT_CONFIG) {}
+
+    /**
+     * Pointer az adattagra
+     */
+    Config_t *p() override {
+        return &config;
+    };
 
     /**
      * Alapértelmezett adatok betöltése
