@@ -181,18 +181,18 @@ void setup() {
 
     // konfig betöltése
     config.load();
-    DEBUG("Konfig load: %s\n", config.p().name);
+    DEBUG("Konfig load: %s\n", config.data.name);
     // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    safeStrCpy(config.p().name, "Sanyi");
-    DEBUG("Konfig átállítva: %s\n", config.p().name);
+    safeStrCpy(config.data.name, "Sanyi");
+    DEBUG("Konfig átállítva: %s\n", config.data.name);
 
     // Beállítjuk a touch scren-t
-    if (isZeroArray(config.p().tftCalibrateData)) {
+    if (isZeroArray(config.data.tftCalibrateData)) {
         beeper.error();
         DEBUG("TFT Touch calibration needed!\n");
-        tftTouchCalibrate(&tft, config.p().tftCalibrateData);
+        tftTouchCalibrate(&tft, config.data.tftCalibrateData);
     }
-    tft.setTouch(config.p().tftCalibrateData);
+    tft.setTouch(config.data.tftCalibrateData);
 
     // si473x
     Wire.setSDA(PIN_SI4735_I2C_SDA); // I2C for SI4735 SDA

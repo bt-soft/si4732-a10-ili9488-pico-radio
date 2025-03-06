@@ -15,12 +15,13 @@ private:
     // A tárolt adatok CRC32 ellenőrző összege
     uint16_t lastCRC = 0;
 
-public:
+protected:
     /**
-     * Pointer az adattagra
+     * Referencia az adattagra, ez az ős használja
      */
     virtual T &p() = 0;
 
+public:
     /**
      * Tárolt adatok mentése
      */
@@ -32,7 +33,7 @@ public:
      * Tárolt adatok betöltése
      */
     virtual void load() {
-        lastCRC = EepromManager<T>::load(p()); // dereferálás
+        lastCRC = EepromManager<T>::load(p());
     }
 
     /**

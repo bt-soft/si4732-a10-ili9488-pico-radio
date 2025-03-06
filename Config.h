@@ -20,29 +20,31 @@ extern const Config_t DEFAULT_CONFIG;
  */
 class Config : public StoreBase<Config_t> {
 
-private:
-    // A 'config' változó, amely az alapértelmezett értékeket veszi fel, kívülről nem módosítható
-    Config_t config;
+public:
+    // A 'config' változó, amely az alapértelmezett értékeket veszi fel
+    // Szándékosan public, nem kell a sok getter egy embedded rendszerben
+    Config_t data;
+
+protected:
+    /**
+     * Referencia az adattagra, csak az ős használja
+     */
+    Config_t &p() override {
+        return data;
+    };
 
 public:
     /**
      * Konstruktor
      * @param pData Pointer a konfigurációs adatokhoz
      */
-    Config() : StoreBase<Config_t>(), config(DEFAULT_CONFIG) {}
-
-    /**
-     * Referencia az adattagra
-     */
-    Config_t &p() override {
-        return config;
-    };
+    Config() : StoreBase<Config_t>(), data(DEFAULT_CONFIG) {}
 
     /**
      * Alapértelmezett adatok betöltése
      */
     void loadDefaults() override {
-        memcpy(&config, &DEFAULT_CONFIG, sizeof(Config_t));
+        memcpy(&data, &DEFAULT_CONFIG, sizeof(Config_t));
         DEBUG("Default config loaded\n");
     }
 };
