@@ -30,7 +30,7 @@ public:
      * @note A konstruktorban kiszámoljuk a CRC-t is
      *
      */
-    EepromManager(T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
+    EepromManager(const T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
     }
 
     /**
@@ -94,7 +94,7 @@ public:
      * @param dataRef a konfigurációs adatok referenciája
      * @return adatok CRC16 ellenőrző összege
      */
-    inline static uint16_t save(T &dataRef, const uint16_t address = 0) {
+    inline static uint16_t save(const T &dataRef, const uint16_t address = 0) {
 
         // Az RP2040 platformon az EEPROM.begin() nem szükséges
         EEPROM.begin(EEPROM_SIZE);
