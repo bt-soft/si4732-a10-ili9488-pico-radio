@@ -48,6 +48,11 @@ SI4735 si4735;
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
 //------------------- EEPROM Config
+#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 5 // 5 perc
+Ticker eepromSaveChecker;
+// Core lock az EEPROM írásánál
+auto_init_mutex(saveEepromMutex);
+
 #include "ConfigStore.h"
 ConfigStore configStore;
 
@@ -167,6 +172,13 @@ void setup() {
     // // Várakozás a soros port megnyitására
     debugWaitForSerial(&tft, &beeper);
 
+    // Pico Ticker beállítása az EEPROM adatok mentésének ellenőrzésére
+    eepromSaveChecker.attach(EEPROM_SAVE_CHECK_INTERVAL_SECONDS, []() {
+        // Lokkolunk, hogy ne tudjuk piszkálni a konfigot a mentés közben
+        CoreMutex mtx(&saveEepromMutex);
+        configStore.checkSave();
+    });
+
     // konfig betöltése
     configStore.load();
     DEBUG("Konfig load: %s\n", pConfig->name);
@@ -217,6 +229,9 @@ void setup() {
  * Arduino loop
  */
 void loop() {
+
+    // Lokkolunk, hogy ne tudjuk menteni az EEPROM-ot a változtatások közben
+    CoreMutex mtx(&saveEepromMutex);
 
     // Rotary Encoder olvasása
     RotaryEncoder::RotaryEncoderResult rotaryEncoderResult = rotaryEncoder.readRotaryEncoder();

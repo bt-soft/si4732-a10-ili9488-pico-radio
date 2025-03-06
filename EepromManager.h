@@ -94,9 +94,9 @@ public:
      * @tparam T a konfigurációs adatok típusa
      * @param address az EEPROM címe
      * @param dataRef a konfigurációs adatok referenciája
-     *
+     * @return adatok CRC16 ellenőrző összege
      */
-    inline static void save(const T &dataRef, const uint16_t address = 0) {
+    inline static uint16_t save(const T &dataRef, const uint16_t address = 0) {
 
         // Létrehozunk egy saját példányt, közben a crc is számítódik
         EepromManager<T> storage(dataRef);
@@ -109,6 +109,8 @@ public:
         EEPROM.commit(); // ESP platformon szükséges!
 #endif
         DEBUG("EEPROM save OK\n");
+
+        return storage.crc;
     }
 };
 
