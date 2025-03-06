@@ -13,30 +13,33 @@
 
 /**
  * EEPROM kezelő osztály
- * A konfigurációs adatokat az EEPROM-ba menti és onnan tölti be
+ * pl.: a konfigurációs adatokat az EEPROM-ba menti és onnan tölti be
  */
 template <class T>
 class EepromManager {
 
 private:
-    T data;       // Konfigurációs adatok
+    T data;       // Betöltött/Mentendő adatok
     uint16_t crc; // Az adatok CRC ellenőrző összege
 
 public:
     /**
      * Konstruktor
-     * @tparam T a konfigurációs adatok típusa
-     * @param dataRef a konfigurációs adatok referenciája
+     *
+     * @tparam T az adat típusa
+     * @param dataRef az adatok referenciája
      * @note A konstruktorban kiszámoljuk a CRC-t is
      *
      */
     EepromManager(const T &dataRef) : data(dataRef), crc(calcCRC16((uint8_t *)&data, sizeof(T))) {
+        EEPROM.begin(EEPROM_SIZE);
     }
 
     /**
      * Ha az adatok érvényesek, azokat beolvassa az EEPROM-ból
-     * @tparam T a konfigurációs adatok típusa
-     * @param dataRef a konfigurációs adatok referenciája
+     *
+     * @tparam T az adatok típusa
+     * @param dataRef az adatok referenciája
      * @param address az EEPROM címe
      * @return adatok CRC16 ellenőrző összege
      */
@@ -53,7 +56,6 @@ public:
 
         // Ha valid, akkor beállítjuk a dataRef-et
         if (valid) {
-            DEBUG("Az EEPROM load ok\n");
             dataRef = storage.data;
         }
 
@@ -61,17 +63,15 @@ public:
     }
 
     /**
-     * Beolvasás vagy beállítás
+     * EEPROM-ból Beolvasás
+     *
      * Ha nem érvényesek, beállítja őket az alapértelmezett értékekre
-     * @tparam T a konfigurációs adatok típusa
-     * @param dataRef a konfigurációs adatok referenciája
+     * @tparam T az adatok típusa
+     * @param dataRef az adatok referenciája
      * @param address az EEPROM címe
      * @return adatok CRC16 ellenőrző összege
      */
     inline static uint16_t load(T &dataRef, const uint16_t address = 0) {
-
-        // Az RP2040 platformon az EEPROM.begin() nem szükséges
-        EEPROM.begin(EEPROM_SIZE);
 
         // Kiolvassuk az adatokat az EEPROM-ból
         uint16_t crc32 = getIfValid(dataRef, address);
@@ -88,27 +88,21 @@ public:
     }
 
     /**
-     * Az EEPROM-ba való mentés
-     * @tparam T a konfigurációs adatok típusa
+     * Az EEPROM-ba mentés
+     *
+     * @tparam T az adatok típusa
      * @param address az EEPROM címe
-     * @param dataRef a konfigurációs adatok referenciája
+     * @param dataRef az adatok referenciája
      * @return adatok CRC16 ellenőrző összege
      */
     inline static uint16_t save(const T &dataRef, const uint16_t address = 0) {
-
-        // Az RP2040 platformon az EEPROM.begin() nem szükséges
-        EEPROM.begin(EEPROM_SIZE);
 
         // Létrehozunk egy saját példányt, közben a crc is számítódik
         EepromManager<T> storage(dataRef);
 
         // Lementjük az adatokat + a crc-t az EEPROM-ba
         EEPROM.put(address, storage);
-
-        // Az RP2040 platformon az EEPROM.commit() nem szükséges
         EEPROM.commit();
-
-        DEBUG("EEPROM save OK\n");
 
         return storage.crc;
     }

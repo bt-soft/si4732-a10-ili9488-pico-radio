@@ -182,8 +182,9 @@ void setup() {
     // konfig betöltése
     config.load();
     DEBUG("Konfig load: %s\n", config.data.name);
+
     // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    safeStrCpy(config.data.name, "Sanyi");
+    safeStrCpy(config.data.name, "Pisti");
     DEBUG("Konfig átállítva: %s\n", config.data.name);
 
     // Beállítjuk a touch scren-t
