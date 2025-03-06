@@ -108,7 +108,7 @@ public:
 #ifndef ARDUINO_ARCH_RP2040
         EEPROM.commit(); // ESP platformon szükséges!
 #endif
-        DEBUG("EEPROM save OK");
+        DEBUG("EEPROM save OK\n");
     }
 };
 
