@@ -8,9 +8,7 @@
 #define __DEBUG // Debug mód bekapcsolása
 
 #ifdef __DEBUG
-// Bekapcsoljuk a beépített LED-et, az EEPROM mentés jelzésére, csak DEBUG módban
-// A StoreBase használja
-#define LED_PIN LED_BUILTIN
+#define LED_BUILTIN 25 // Pico beépített LED a fekete lapkán
 #endif
 
 //--- TFT colors ---

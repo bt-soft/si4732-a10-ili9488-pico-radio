@@ -21,7 +21,7 @@ extern const Config_t DEFAULT_CONFIG;
 class Config : public StoreBase<Config_t> {
 
 public:
-    // A 'config' változó, amely az alapértelmezett értékeket veszi fel
+    // A 'config' változó, alapértelmezett értékeket veszi fel a konstruktorban
     // Szándékosan public, nem kell a sok getter egy embedded rendszerben
     Config_t data;
 

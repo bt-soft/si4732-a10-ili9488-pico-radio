@@ -151,9 +151,14 @@ void drawScreen() {
 void setup() {
     Serial.begin(115200);
 
-    // LED kimenet
+    // TFT LED kimenet
     pinMode(PIN_DISPLAY_LED, OUTPUT);
     digitalWrite(PIN_DISPLAY_LED, 0);
+
+#ifdef __DEBUG
+    pinMode(LED_BUILTIN, OUTPUT);
+    digitalWrite(LED_BUILTIN, HIGH);
+#endif
 
     // Rotary Encoder felhúzása
     rotaryEncoder.setDoubleClickEnabled(true);

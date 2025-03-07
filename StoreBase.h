@@ -25,7 +25,7 @@ public:
     /**
      * Tárolt adatok mentése
      */
-    virtual void save() {
+    virtual void forceSave() {
         EepromManager<T>::save(r());
     }
 
@@ -49,12 +49,8 @@ public:
 
         uint16_t crc = calcCRC16((uint8_t *)&r(), sizeof(T));
         if (lastCRC != crc) {
-
-            digitalWrite(LED_BUILTIN, HIGH);
             crc = EepromManager<T>::save(r());
             lastCRC = crc;
-            digitalWrite(LED_BUILTIN, LOW);
-
             DEBUG("EEPROM save end, crc = %d\n", crc);
         }
     }
