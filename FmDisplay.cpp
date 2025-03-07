@@ -38,6 +38,23 @@ FmDisplay::~FmDisplay() {
 }
 
 /**
+ * Képernyő kirajzolása
+ */
+void FmDisplay::drawScreen() {
+
+    tft.fillScreen(TFT_BLACK);
+    tft.setTextFont(2);
+
+    // Megjelenítjük a képernyő gombokat
+    for (uint8_t i = 0; i < FM_SCREEN_BUTTONS_COUNT; ++i) {
+        screenButtons[i].draw();
+    }
+
+    // Az utolsót letiltjuk
+    screenButtons[FM_SCREEN_BUTTONS_COUNT - 1].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
+}
+
+/**
  * Gombok callback
  * A megnyomott gomb visszaadja a label-jét és az állapotát
  * @param label megnyomott gomb label
@@ -97,23 +114,6 @@ void FmDisplay::handleScreenButtonPress() {
     } else {
         DEBUG("Screen button Label: '%s', állapot változás: %s\n", buttonLabel, TftButton::decodeState(buttonState));
     }
-}
-
-/**
- * Képernyő kirajzolása
- */
-void FmDisplay::drawScreen() {
-
-    tft.fillScreen(TFT_BLACK);
-    tft.setTextFont(2);
-
-    // Megjelenítjük a képernyő gombokat
-    for (uint8_t i = 0; i < FM_SCREEN_BUTTONS_COUNT; ++i) {
-        screenButtons[i].draw();
-    }
-
-    // Az utolsót letiltjuk
-    screenButtons[FM_SCREEN_BUTTONS_COUNT - 1].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
 /**

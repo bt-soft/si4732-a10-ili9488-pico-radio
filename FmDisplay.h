@@ -35,7 +35,6 @@ protected:
 public:
     FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config);
     virtual ~FmDisplay();
-
     void drawScreen() override;
 };
 
