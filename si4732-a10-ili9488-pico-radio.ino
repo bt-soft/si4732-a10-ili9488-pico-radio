@@ -207,19 +207,21 @@ void setup() {
         while (true) // nem megyünk tovább
             ;
     }
+    si4735.setDeviceI2CAddress(si4735Addr == 0x11 ? 0 : 1); // Sets the I2C Bus Address
 
-    // Megtaláltuk az SI4735-öt
-    tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.print(F("Si473X addr:  "));
-    tft.println(si4735Addr, HEX);
-    delay(1500);
+    // // Megtaláltuk az SI4735-öt
+    // tft.setTextColor(TFT_GREEN, TFT_BLACK);
+    // tft.print(F("Si473X addr:  "));
+    // tft.println(si4735Addr, HEX);
+    // delay(1500);
 
-    si4735.setDeviceI2CAddress(si4735Addr == 0x11 ? 0 : 1); // Sets the I2C Bus Address, FIXME: ez minek kell, ha egyszer már elárulta a címét?
-    si4735.setAudioMuteMcuPin(PIN_AUDIO_MUTE);              // Audio Mute pin
-
+    // Band init
     band.BandInit();
     band.BandSet();
-    si4735.setVolume(config.data.currentVOL);
+
+    // Si4735 init
+    si4735.setVolume(config.data.currentVOL);  // Hangerő
+    si4735.setAudioMuteMcuPin(PIN_AUDIO_MUTE); // Audio Mute pin
 
     // Képernyő kirajzolása az aktuálismódban
     drawScreen();
@@ -238,11 +240,9 @@ void loop() {
     if (rotaryEncoderResult.direction != RotaryEncoder::Direction::NONE) {
         switch (rotaryEncoderResult.direction) {
         case RotaryEncoder::Direction::UP:
-            DEBUG("Rotary Encoder UP\n");
             si4735.frequencyUp();
             break;
         case RotaryEncoder::Direction::DOWN:
-            DEBUG("Rotary Encoder DOWN\n");
             si4735.frequencyDown();
             break;
         }
