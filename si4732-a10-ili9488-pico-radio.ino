@@ -48,9 +48,9 @@ SI4735 si4735;
 static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
 //------------------- EEPROM Config
-#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 1 // 5 perc
+#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 5 // 5 perc
 Ticker eepromSaveChecker;
-// Core lock az EEPROM írásánál
+// Core lock, az EEPROM írásánálhasználjuk
 auto_init_mutex(saveEepromMutex);
 
 #include "Config.h"
@@ -157,7 +157,7 @@ void setup() {
 
 #ifdef __DEBUG
     pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
+    // digitalWrite(LED_BUILTIN, HIGH);
 #endif
 
     // Rotary Encoder felhúzása
@@ -174,8 +174,8 @@ void setup() {
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
 
-    // // Várakozás a soros port megnyitására
-    debugWaitForSerial(&tft, &beeper);
+    // Várakozás a soros port megnyitására
+    //    debugWaitForSerial(&tft, &beeper);
 
     // Pico Ticker beállítása az EEPROM adatok mentésének ellenőrzésére
     eepromSaveChecker.attach(EEPROM_SAVE_CHECK_INTERVAL_SECONDS, []() {
