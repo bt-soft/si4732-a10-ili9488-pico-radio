@@ -20,10 +20,12 @@ typedef enum ButtonType_t {
 } ButtonType;
 
 // Callback típusa
-typedef void (*ButtonCallback)(const char *, ButtonState_t);
+// typedef void (*ButtonCallback)(const char *, ButtonState_t);
+typedef std::function<void(const char *, ButtonState_t)> ButtonCallback;
 
 class TftButton {
 
+public:
 private:
     // Benyomott gomb háttérszín gradienshez, több iterációs lépés -> erősebb hatás
     static constexpr uint8_t DARKEN_COLORS_STEPS = 6;
@@ -34,7 +36,8 @@ private:
     ButtonState state;
     ButtonState oldState;
     ButtonType type;
-    ButtonCallback callback;
+    // ButtonCallback callback = nullptr;
+    std::function<void(const char *, ButtonState_t)> callback; // Callback függvény
     uint16_t colors[3] = {TFT_COLOR(65, 65, 114) /*normal*/, TFT_COLOR(65, 65, 114) /*pushed*/, TFT_COLOR(65, 65, 65) /* diabled */};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
 
@@ -87,6 +90,11 @@ private:
     }
 
 public:
+    /**
+     * Default konstruktor (pl.: a dinamikus tömb deklarációhoz)
+     */
+    TftButton() {};
+
     /// @brief button konstruktor
     /// @param pTft TFT példány
     /// @param x  x pozíció
