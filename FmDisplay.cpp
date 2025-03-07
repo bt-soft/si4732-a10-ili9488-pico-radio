@@ -75,6 +75,7 @@ void FmDisplay::createPopupDialog() {
 
 /**
  * Multi gombos dialógus ablak létrehozása
+ * A gombok törléséről a MultiButtonDialog desktruktora gondoskodik
  * @param buttonLabels gombok labeljei
  * @param buttonsCount gombok száma
  */

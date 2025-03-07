@@ -103,7 +103,10 @@ protected:
     }
 
 public:
-    /// @brief Dialóg destruktor
+    /**
+     * Dialóg destruktor
+     * Töröljük a gombokat
+     */
     ~MultiButtonDialog() {
         for (uint8_t i = 0; i < buttonCount; i++) {
             delete buttons[i];
