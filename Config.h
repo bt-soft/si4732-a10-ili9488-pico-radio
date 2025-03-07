@@ -2,14 +2,45 @@
 #define __CONFIG_H
 
 #include "StoreBase.h"
+#include "pinout.h"
 
 // --------------------------------
 // Konfig struktúra típusdefiníció
 struct Config_t {
+    //-- Band
+    uint8_t bandIdx;
+    uint16_t currentFreq;
+    uint8_t currentStep;
+
+    // BandWidht
+    uint8_t bwIdxAM;
+    uint8_t bwIdxFM;
+    uint8_t bwIdxMW;
+    uint8_t bwIdxSSB;
+
+    // Step
+    uint8_t ssIdxMW;
+    uint8_t ssIdxAM;
+    uint8_t ssIdxFM;
+
+    // BFO
+    int currentBFO;
+    uint8_t currentBFOStep;
+    int currentBFOmanu;
+
+    // Squelch
+    uint8_t currentSquelch;
+    bool squelchUsesRSSI; // A squlech RSSI alapú legyen?
+
+    // Hangerő
+    uint8_t currentVOL;
+
+    // AGC
+    uint8_t AGCgain;
+
+    //--- TFT
     uint16_t tftCalibrateData[5]; // TFT touch kalibrációs adatok
-    int someValue;
-    float anotherValue;
-    char name[10];
+    bool digitLigth;              // Inaktív szegmens látszódjon?
 };
 
 // Alapértelmezett konfigurációs adatok (readonly, const)
@@ -45,7 +76,6 @@ public:
      */
     void loadDefaults() override {
         memcpy(&data, &DEFAULT_CONFIG, sizeof(Config_t));
-        DEBUG("Default config loaded\n");
     }
 };
 

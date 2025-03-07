@@ -1,20 +1,7 @@
 #include <Arduino.h>
 
 //------------------- Pins
-// I2C si4735
-#define PIN_SI4735_I2C_SDA 8
-#define PIN_SI4735_I2C_SCL 9
-#define PIN_SI4735_RESET 10
-
-// Rotary Encoder
-#define PIN_ENCODER_CLK 16
-#define PIN_ENCODER_DT 17
-#define PIN_ENCODER_SW 18
-
-// Others
-#define PIN_DISPLAY_LED 21
-#define PIN_AUDIO_MUTE 20
-#define PIN_BEEPER 22
+#include "pinout.h"
 
 //------------------ TFT
 #include <TFT_eSPI.h> // TFT_eSPI könyvtár
@@ -35,7 +22,6 @@ Ticker rotaryTicker;
 
 #include "RotaryEncoder.h"
 RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN_ENCODER_SW);
-RotaryEncoder::RotaryEncoderResult rotaryEncoderResult;
 
 //------------------- beeper
 #include "Beeper.h"
@@ -44,8 +30,6 @@ Beeper beeper = Beeper(PIN_BEEPER);
 //------------------- si4735
 #include <SI4735.h>
 SI4735 si4735;
-#include <patch_full.h>                                            // SSB patch for whole SSBRX full download
-static constexpr uint16_t size_content = sizeof ssb_patch_content; // see ssb_patch_content in patch_full.h or patch_init.h
 
 //------------------- EEPROM Config
 #define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 5 // 5 perc
@@ -55,6 +39,10 @@ auto_init_mutex(saveEepromMutex);
 
 #include "Config.h"
 Config config;
+
+//------------------- Band
+#include "Band.h"
+Band band(si4735, config);
 
 /**
  * Gombok callback
@@ -149,16 +137,14 @@ void drawScreen() {
  * Arduino setup
  */
 void setup() {
+#ifdef __DEBUG
     Serial.begin(115200);
+    pinMode(LED_BUILTIN, OUTPUT);
+#endif
 
     // TFT LED kimenet
     pinMode(PIN_DISPLAY_LED, OUTPUT);
     digitalWrite(PIN_DISPLAY_LED, 0);
-
-#ifdef __DEBUG
-    pinMode(LED_BUILTIN, OUTPUT);
-    // digitalWrite(LED_BUILTIN, HIGH);
-#endif
 
     // Rotary Encoder felhúzása
     rotaryEncoder.setDoubleClickEnabled(true);
@@ -168,15 +154,6 @@ void setup() {
     rotaryTicker.attach_ms(5, []() {
         rotaryEncoder.service();
     });
-
-    // TFT inicializálása
-    tft.init();
-    tft.setRotation(1);
-    tft.fillScreen(TFT_BLACK);
-
-    // Várakozás a soros port megnyitására
-    //    debugWaitForSerial(&tft, &beeper);
-
     // Pico Ticker beállítása az EEPROM adatok mentésének ellenőrzésére
     eepromSaveChecker.attach(EEPROM_SAVE_CHECK_INTERVAL_SECONDS, []() {
         // Lokkolunk, hogy ne tudjuk piszkálni a konfigot a mentés közben
@@ -184,20 +161,34 @@ void setup() {
         config.checkSave();
     });
 
-    // konfig betöltése
-    config.load();
-    DEBUG("Konfig load: %s\n", config.data.name);
+    // TFT inicializálása
+    tft.init();
+    tft.setRotation(1);
+    tft.fillScreen(TFT_BLACK);
 
-    // Módosíthatod a konfigurációs adatokat, majd elmentheted
-    safeStrCpy(config.data.name, "Pisti");
-    DEBUG("Konfig átállítva: %s\n", config.data.name);
+    // Várakozás a soros port megnyitására
+    // debugWaitForSerial(&tft, &beeper);
 
-    // Beállítjuk a touch scren-t
+    // Ha a bekapcsolás alatt nyomva tartjuk a rotary gombját, akkor töröljük a konfigot
+    if (digitalRead(PIN_ENCODER_SW) == LOW) {
+        beeper.tick();
+        delay(1500);
+        if (digitalRead(PIN_ENCODER_SW) == LOW) { // Ha még mindig nyomják
+            config.loadDefaults();
+            beeper.tick();
+            DEBUG("Default settings resored!\n");
+        }
+    } else {
+        // konfig betöltése
+        config.load();
+    }
+
+    // Kell kalibrálni a TFT Touch-t?
     if (isZeroArray(config.data.tftCalibrateData)) {
         beeper.error();
-        DEBUG("TFT Touch calibration needed!\n");
         tftTouchCalibrate(&tft, config.data.tftCalibrateData);
     }
+    // Beállítjuk a touch scren-t
     tft.setTouch(config.data.tftCalibrateData);
 
     // si473x
@@ -226,9 +217,12 @@ void setup() {
     si4735.setDeviceI2CAddress(si4735Addr == 0x11 ? 0 : 1); // Sets the I2C Bus Address, FIXME: ez minek kell, ha egyszer már elárulta a címét?
     si4735.setAudioMuteMcuPin(PIN_AUDIO_MUTE);              // Audio Mute pin
 
-    // Képernyő kirajzolása
+    band.BandInit();
+    band.BandSet();
+    si4735.setVolume(config.data.currentVOL);
+
+    // Képernyő kirajzolása az aktuálismódban
     drawScreen();
-    beeper.tick();
 }
 
 /**
@@ -245,16 +239,20 @@ void loop() {
         switch (rotaryEncoderResult.direction) {
         case RotaryEncoder::Direction::UP:
             DEBUG("Rotary Encoder UP\n");
+            si4735.frequencyUp();
             break;
         case RotaryEncoder::Direction::DOWN:
             DEBUG("Rotary Encoder DOWN\n");
+            si4735.frequencyDown();
             break;
         }
+
+        band.getBandTable(config.data.bandIdx).currentFreq = si4735.getFrequency();
     }
 
     try {
         // Touch esemény lekérdezése
-        static uint16_t tx, ty;
+        uint16_t tx, ty;
         bool touched = tft.getTouch(&tx, &ty, 40); // A treshold értékét megnöveljük a default 20msec-ről 40-re
 
         // Ha van dialóg, akkor annak a gombjainak a touch eseményeit hívjuk
