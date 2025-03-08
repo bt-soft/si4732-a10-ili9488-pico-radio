@@ -15,9 +15,9 @@ private:
 protected:
     /**
      * Rotary encoder esemény kezelése
-     * @param rotaryEncoderResult rotary encoder eredmény
+     * @param encoderState rotary encoder eredmény
      */
-    void handleRotaryEncoder(RotaryEncoder::RotaryEncoderResult rotaryEncoderResult) override;
+    void handleRotaryEncoder(RotaryEncoder::EncoderState encoderState) override;
 
     /**
      * Képernyő gombnyomás esemény kezelése

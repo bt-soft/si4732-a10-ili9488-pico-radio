@@ -17,6 +17,7 @@ DisplayBase *pDisplay;
 Ticker rotaryTicker;
 
 #include "RotaryEncoder.h"
+#define ROTARY_ENCODER_TICKER_INTERVAL_MSEC 1 // 5 perc
 RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN_ENCODER_SW);
 
 //------------------- beeper
@@ -28,7 +29,7 @@ Beeper beeper = Beeper(PIN_BEEPER);
 SI4735 si4735;
 
 //------------------- EEPROM Config
-#define EEPROM_SAVE_CHECK_INTERVAL_SECONDS 60 * 5 // 5 perc
+#define EEPROM_SAVE_CHECK_TICKER_INTERVAL_SECONDS 60 * 5 // 5 perc
 Ticker eepromSaveChecker;
 auto_init_mutex(saveEepromMutex); // Core lock, az EEPROM írásánálhasználjuk
 
@@ -57,11 +58,11 @@ void setup() {
     rotaryEncoder.setAccelerationEnabled(false);
 
     // Pico Ticker beállítása a Rotary Encoder olvasására
-    rotaryTicker.attach_ms(5, []() {
+    rotaryTicker.attach_ms(ROTARY_ENCODER_TICKER_INTERVAL_MSEC, []() {
         rotaryEncoder.service();
     });
     // Pico Ticker beállítása az EEPROM adatok mentésének ellenőrzésére
-    eepromSaveChecker.attach(EEPROM_SAVE_CHECK_INTERVAL_SECONDS, []() {
+    eepromSaveChecker.attach(EEPROM_SAVE_CHECK_TICKER_INTERVAL_SECONDS, []() {
         // Lokkolunk, hogy ne tudjuk piszkálni a konfigot a mentés közben
         CoreMutex mtx(&saveEepromMutex);
         config.checkSave();
@@ -150,9 +151,37 @@ void loop() {
     CoreMutex mtx(&saveEepromMutex);
 
     // Rotary Encoder olvasása
-    RotaryEncoder::RotaryEncoderResult rotaryEncoderResult = rotaryEncoder.readRotaryEncoder();
-    // Kikapcsolás figyelése
+    RotaryEncoder::EncoderState encoderState = rotaryEncoder.read();
+    if (encoderState.direction != RotaryEncoder::Direction::NONE) {
+        switch (encoderState.direction) {
+        case RotaryEncoder::Direction::UP:
+            DEBUG("Rotary Direction UP\n");
+            break;
+        case RotaryEncoder::Direction::DOWN:
+            DEBUG("Rotary Direction DOWN\n");
+            break;
+        }
+    } else if (encoderState.buttonState != RotaryEncoder::ButtonState::Open) {
+        switch (encoderState.buttonState) {
+        case RotaryEncoder::ButtonState::Pressed:
+            DEBUG("Rotary Button Pressed\n");
+            break;
+        case RotaryEncoder::ButtonState::Held:
+            DEBUG("Rotary Button Held\n");
+            break;
+        case RotaryEncoder::ButtonState::Released:
+            DEBUG("Rotary Button Released\n");
+            break;
+        case RotaryEncoder::ButtonState::Clicked:
+            DEBUG("Rotary Button Clicked\n");
+            break;
+        case RotaryEncoder::ButtonState::DoubleClicked:
+            DEBUG("Rotary Button DoubleClicked\n");
+            break;
+        }
+    }
+    // TODO: Kikapcsolás figyelését még implementálni
 
     // Aktuális Display loopja
-    pDisplay->handeLoop(rotaryEncoderResult);
+    pDisplay->handeLoop(encoderState);
 }

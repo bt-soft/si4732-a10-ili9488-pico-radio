@@ -30,9 +30,9 @@ protected:
 
     /**
      * Rotary encoder esemény kezelése
-     * @param rotaryEncoderResult rotary encoder eredmény
+     * @param encoderState rotary encoder eredmény
      */
-    virtual void handleRotaryEncoder(RotaryEncoder::RotaryEncoderResult rotaryEncoderResult) = 0;
+    virtual void handleRotaryEncoder(RotaryEncoder::EncoderState encoderState) = 0;
 
     /**
      * Képernyő gombnyomás esemény kezelése
@@ -69,14 +69,14 @@ public:
 
     /**
      * Loop esemény kezelése
-     * @param rotaryEncoderResult rotary encoder eredmény
+     * @param encoderState rotary encoder eredmény
      */
-    void handeLoop(RotaryEncoder::RotaryEncoderResult rotaryEncoderResult) {
+    void handeLoop(RotaryEncoder::EncoderState encoderState) {
 
         // Rotary Encoder olvasása
-        if (rotaryEncoderResult.direction != RotaryEncoder::Direction::NONE) {
+        if (encoderState.direction != RotaryEncoder::Direction::NONE) {
             try {
-                handleRotaryEncoder(rotaryEncoderResult);
+                handleRotaryEncoder(encoderState);
             } catch (const std::exception &e) {
                 DEBUG("Hiba a handleRotaryEncoder() függvényben: %s\n", e.what());
             }

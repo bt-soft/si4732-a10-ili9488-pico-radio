@@ -115,11 +115,11 @@ void FmDisplay::handleScreenButtonPress() {
 
 /**
  * Rotary encoder esemény kezelése
- * @param rotaryEncoderResult rotary encoder eredmény
+ * @param encoderState rotary encoder eredmény
  */
-void FmDisplay::handleRotaryEncoder(RotaryEncoder::RotaryEncoderResult rotaryEncoderResult) {
+void FmDisplay::handleRotaryEncoder(RotaryEncoder::EncoderState encoderState) {
 
-    switch (rotaryEncoderResult.direction) {
+    switch (encoderState.direction) {
     case RotaryEncoder::Direction::UP:
         si4735.frequencyUp();
         break;

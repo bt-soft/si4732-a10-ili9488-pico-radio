@@ -1,92 +1,124 @@
-/*
+#ifndef __ROTARYENCODER_H
+#define __ROTARYENCODER_H
+/**
+ * Timer-based rotary encoder
+ * Rotary Encoder Driver with Acceleration
+ * Supports Click, DoubleClick, Long Click
  *
- * Copyright 2018 - BT-Soft
+ * inspired:  http://www.mikrocontroller.net/articles/Drehgeber
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- * RotaryEncoder.h
- *
- *  Created on: 2018. j�n. 27.
- *      Author: BT-Soft
  */
 
-#ifndef ROTARYENCODER_H_
-#define ROTARYENCODER_H_
+#include <Arduino.h>
 
-#include "ClickEncoder.h"
+#define ENC_RECOMMENDED_SERVICE_INTERVAL_MSEC 1 // A javasolt service() hívás periódus idő = 1msec
 
-class RotaryEncoder : public ClickEncoder {
+// ----------------------------------------------------------------------------
+
+#define ENC_NORMAL (1 << 1) // use Peter Danneger's decoder
+#define ENC_FLAKY (1 << 2)  // use Table-based decoder
+
+// ----------------------------------------------------------------------------
+
+#ifndef ENC_DECODER
+#define ENC_DECODER ENC_NORMAL
+#endif
+
+#if ENC_DECODER == ENC_FLAKY
+#ifndef ENC_HALFSTEP
+#define ENC_HALFSTEP 1 // use table for half step per default
+#endif
+#endif
+
+class RotaryEncoder {
+public:
+    // Forgás iránya
+    enum Direction { NONE, // nincs irány
+                     UP,   // jobbra/fel
+                     DOWN  // balra/le
+    };
+
+    // Gomb állapota
+    enum ButtonState { Open,         // nyitva
+                       Pressed,      // lenyomva
+                       Held,         // nyomva tartava
+                       Released,     // elengedve
+                       Clicked,      // klikk
+                       DoubleClicked // duplaklikk
+    };
+
+    // Encoder állapotát tároló struktúra
+    struct EncoderState {
+        Direction direction;
+        ButtonState buttonState;
+    };
 
 private:
-    int8_t oldValue = 0;
-    int8_t value = 0;
+    const uint8_t pinA;
+    const uint8_t pinB;
+    const uint8_t pinBTN;
+    const bool pinsActive;
+    volatile int16_t delta;
+    volatile int16_t last;
+    uint8_t steps;
+    volatile uint16_t acceleration;
+    bool accelerationEnabled;
+#if ENC_DECODER != ENC_NORMAL
+    static const int8_t table[16];
+#endif
+    volatile ButtonState buttonState;
+    bool doubleClickEnabled;
+    uint16_t keyDownTicks = 0;
+    uint8_t doubleClickTicks = 0;
+    unsigned long lastButtonCheck = 0;
+
+    //--
+    int16_t oldValue = 0;
+    int16_t value = 0;
+
+    //--
+
+    /**
+     * Tekergetés állapot lekérdezése
+     */
+    int16_t getValue(void);
+    /**
+     * Gomb állapot lekérdezése
+     */
+    ButtonState getButton(void);
 
 public:
     /**
-     * Irány enum
+     * Konstruktor
      */
-    typedef enum Direction_t {
-        DOWN,
-        UP,
-        NONE
-    } Direction;
+    RotaryEncoder(uint8_t A, uint8_t B, uint8_t BTN = -1, uint8_t stepsPerNotch = 1, bool pinsActive = LOW);
 
     /**
-     * Visszatérési érték
+     * Ezt a függvényt hívja meg a megszakítás vagy az időzítő rutin
      */
-    typedef struct t {
-        Direction_t direction; //
-        Button_e buttonState;
-    } RotaryEncoderResult;
+    void service();
 
     /**
-     *
+     * Gyorsulás engedélyezése/letiltása
      */
-    RotaryEncoder(uint8_t CLK, uint8_t DT, uint8_t SW) : ClickEncoder(CLK, DT, SW) {
-
-        // ClickEncoder
-        ClickEncoder::setAccelerationEnabled(true);
-        oldValue = ClickEncoder::getValue();
-    }
-
-    /**
-     *
-     */
-    RotaryEncoderResult readRotaryEncoder() {
-        RotaryEncoderResult result;
-
-        result.buttonState = ClickEncoder::getButton();
-        result.direction = NONE;
-
-        if (result.buttonState == ClickEncoder::Open) { // Tekerni és klikkelni egyszerre nem lehet
-
-            value += ClickEncoder::getValue();
-
-            if (value / 2 > oldValue) {
-                oldValue = value / 2;
-                result.direction = DOWN;
-                // delay(50);
-            } else if (value / 2 < oldValue) {
-                oldValue = value / 2;
-                result.direction = UP;
-                // delay(50);
-            }
+    void setAccelerationEnabled(const bool &enabled) {
+        accelerationEnabled = enabled;
+        if (accelerationEnabled == false) {
+            acceleration = 0;
         }
-
-        return result;
     }
+    const bool getAccelerationEnabled() { return accelerationEnabled; }
+
+    /**
+     * Dupla kattintás engedélyezése/letiltása
+     */
+    void setDoubleClickEnabled(const bool &enabled) { doubleClickEnabled = enabled; }
+    const bool getDoubleClickEnabled() { return doubleClickEnabled; }
+
+    /**
+     * Az enkóder jelenlegi állapotának lekérdezése
+     */
+    EncoderState read();
 };
 
-extern RotaryEncoder *pRotaryEncoder;
-
-#endif /* ROTARYENCODER_H_ */
+#endif // ROTARYENCODER_H
