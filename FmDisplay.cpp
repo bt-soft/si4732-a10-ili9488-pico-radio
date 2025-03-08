@@ -69,7 +69,7 @@ void FmDisplay::ButtonCallback_t(const char *label, ButtonState_t state) {
  * Dialógus ablak létrehozása
  */
 void FmDisplay::createPopupDialog() {
-    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), [this](const char *label, ButtonState_t state) { this->ButtonCallback_t(label, state); }, "Igen", "Lehet megse kellene");
+    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCREEN_BUTTON_CALLBACK(FmDisplay, this), "Igen", "Lehet megse kellene");
 }
 
 /**
