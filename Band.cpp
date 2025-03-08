@@ -37,6 +37,14 @@ BandTable_t bandTable[] = {
 };
 
 /**
+ * A Band egy rekordjának elkérése az index alapján
+ */
+
+BandTable_t &Band::getBandByIdx(uint8_t bandIdx) {
+    return bandTable[bandIdx];
+}
+
+/**
  * SSB patch betöltése
  */
 void Band::loadSSB() {
@@ -74,7 +82,7 @@ void Band::loadSSB() {
  */
 void Band::useBand() {
 
-    Band currentBand = bandTable[config.data.bandIdx];
+    BandTable_t currentBand = bandTable[config.data.bandIdx];
 
     switch (currentBand.bandType) {
 
@@ -138,10 +146,14 @@ void Band::setBandWidth() {
         si4735.setSSBAudioBandwidth(config.data.bwIdxSSB);
 
         // If audio bandwidth selected is about 2 kHz or below, it is recommended to set Sideband Cutoff Filter to 0.
-        if (config.data.bwIdxSSB == 0 or config.data.bwIdxSSB == 4 or config.data.bwIdxSSB == 5)
-            si4735.setSSBSidebandCutoffFilter(0); // Band pass filter to cutoff both the unwanted side band and high frequency components > 2.0 kHz of the wanted side band. (default)
-        else
-            si4735.setSSBSidebandCutoffFilter(1); // Low pass filter to cutoff the unwanted side band.
+        if (config.data.bwIdxSSB == 0 or config.data.bwIdxSSB == 4 or config.data.bwIdxSSB == 5) {
+            // Band pass filter to cutoff both the unwanted side band and high frequency components > 2.0 kHz of the wanted side band. (default)
+            si4735.setSSBSidebandCutoffFilter(0);
+
+        } else {
+            // Low pass filter to cutoff the unwanted side band.
+            si4735.setSSBSidebandCutoffFilter(1);
+        }
     }
 
     if (currentMode == AM) {

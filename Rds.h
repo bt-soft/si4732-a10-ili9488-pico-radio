@@ -67,6 +67,12 @@ public:
      * RDS adatok megjelenítése (csak FM módban)
      */
     void showRDS(uint8_t snr);
+
+    /**
+     * RDS adatok megjelenítése
+     * (Az esetleges dialóg eltünése után a teljes képernyőt újra rajzolásakor kellhet)
+     */
+    void displayRds(bool force = false);
 };
 
 #endif

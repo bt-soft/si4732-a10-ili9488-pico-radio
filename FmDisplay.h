@@ -14,7 +14,8 @@ private:
     void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount);
     void handleScreenButtonPress();
 
-    void showMonoStereo();
+    void showMonoStereo(bool stereo);
+    void displayValues();
 
     uint16_t freqDispX, freqDispY;
     TftButton *screenButtons; // Dinamikusan létrehozott gombok tömbje

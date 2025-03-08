@@ -55,7 +55,11 @@ int getLongestPtyStrLength() {
  * Konstruktor
  */
 RDS::RDS(TFT_eSPI &tft, SI4735 &si4735, uint16_t stationX, uint16_t stationY, uint16_t msgX, uint16_t msgY, uint16_t timeX, uint16_t timeY, uint16_t ptyX, uint16_t ptyY)
-    : tft(tft), si4735(si4735), stationX(stationX), stationY(stationY), msgX(msgX), msgY(msgY), timeX(timeX), timeY(timeY), ptyX(ptyX), ptyY(ptyY) {
+    : tft(tft), si4735(si4735),
+      stationX(stationX), stationY(stationY),
+      msgX(msgX), msgY(msgY),
+      timeX(timeX), timeY(timeY),
+      ptyX(ptyX), ptyY(ptyY) {
 
     // Lekérjük a fontok méreteit (Fontos előtte beállítani a fontot!!)
     tft.setFreeFont();
@@ -75,16 +79,11 @@ RDS::RDS(TFT_eSPI &tft, SI4735 &si4735, uint16_t stationX, uint16_t stationY, ui
 }
 
 /**
- * RDS adatok megszerzése és megjelenítése
+ * RDS adatok megjelenítése
+ * (Az esetleges dialóg eltünése után a teljes képernyőt újra rajzolásakor kellhet -> forceDisplay = true)
+ * @param forceDisplay erőből, ne csak a változáskor jelenítsen meg adatokat
  */
-void RDS::checkRds() {
-
-    si4735.getRdsStatus();
-
-    // Ha nincs RDS akkor nem megyünk tovább
-    if (!si4735.getRdsReceived() or !si4735.getRdsSync() or !si4735.getRdsSyncFound()) {
-        return;
-    }
+void RDS::displayRds(bool forceDisplay) {
 
     tft.setFreeFont();
     tft.setTextDatum(BC_DATUM);
@@ -108,15 +107,14 @@ void RDS::checkRds() {
     }
 
     // Idő
-    uint16_t year;
-    uint16_t month;
-    uint16_t day;
-    uint16_t hour;
-    uint16_t minute;
-    if (si4735.getRdsDateTime(&year, &month, &day, &hour, &minute)) {
-        char dateTime[20];
-        sprintf(dateTime, "%04d-%02d-%02d %02d:%02d", year, month, day, hour, minute);
-        // DEBUG("RDS full datetime : %s  ", dateTime);
+    char dateTime[20];
+    uint16_t year, month, day, hour, minute;
+
+    bool rdsDateTimeSuccess = si4735.getRdsDateTime(&year, &month, &day, &hour, &minute);
+    // Ha izomból kell megjeleníteni vagy érvényes idő jött
+    if (forceDisplay or rdsDateTimeSuccess) {
+        // sprintf(dateTime, "%04d-%02d-%02d %02d:%02d", year, month, day, hour, minute);
+        //  DEBUG("RDS full datetime : %s  ", dateTime);
 
         tft.setTextSize(1);
         tft.setTextDatum(BC_DATUM);
@@ -132,7 +130,8 @@ void RDS::checkRds() {
     if (rdsPty < RDS_PTY_COUNT) {
         const char *p = getPtyStrPointer(rdsPty); // PTY String PROGMEM pointerének megszerzése
 
-        if (rdsProgramType != p) {
+        // Ha izomból kell megjeleníteni vagy változás van
+        if (forceDisplay or rdsProgramType != p) {
             // clear RDS programType
             tft.fillRect(ptyX, ptyY, font2Width * ptyArrayMaxLength, font2Height, TFT_BLACK);
 
@@ -147,6 +146,20 @@ void RDS::checkRds() {
             tft.print((const __FlashStringHelper *)rdsProgramType);
         }
     }
+}
+
+/**
+ * RDS adatok megszerzése és megjelenítése
+ */
+void RDS::checkRds() {
+
+    // Ha nincs RDS akkor nem megyünk tovább
+    si4735.getRdsStatus();
+    if (!si4735.getRdsReceived() or !si4735.getRdsSync() or !si4735.getRdsSyncFound()) {
+        return;
+    }
+
+    displayRds();
 }
 
 /**

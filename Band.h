@@ -59,7 +59,7 @@ public:
     /**
      * A Band egy rekordjának elkérése az index alapján
      */
-    BandTable_t &getBandByIdx(uint8_t bandIdx) { return bandTable[bandIdx]; }
+    BandTable_t &getBandByIdx(uint8_t bandIdx);
 };
 
 #endif

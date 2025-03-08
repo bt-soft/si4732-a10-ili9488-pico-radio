@@ -58,6 +58,7 @@ FmDisplay::~FmDisplay() {
 
 /**
  * Képernyő kirajzolása
+ * (Az esetleges dialóg eltünése után a teljes képernyőt újra rajzoljuk)
  */
 void FmDisplay::drawScreen() {
 
@@ -68,11 +69,26 @@ void FmDisplay::drawScreen() {
     // RSI skála kirajzoltatása
     pSMeter->drawSmeterScale();
 
+    // RSSI aktuális érték
+    si4735.getCurrentReceivedSignalQuality();
+    uint8_t rssi = si4735.getCurrentRSSI();
+    uint8_t snr = si4735.getCurrentSNR();
+    pSMeter->showRSSI(rssi, snr, band.currentMode == FM);
+
+    // RDS (erőből a 'valamilyen' adatok megjelenítése)
+    pRds->displayRds(true);
+
+    // Mono/Stereo aktuális érték
+    this->showMonoStereo(si4735.getCurrentPilot());
+
+    // Frekvencia
+    float currFreq = band.getBandByIdx(config.data.bandIdx).currentFreq; // A Rotary változtatásakor már eltettük a Band táblába
+    pFreqDisplay->FreqDraw(currFreq, 0);
+
     // Megjelenítjük a képernyő gombokat
     for (uint8_t i = 0; i < FM_SCREEN_BUTTONS_COUNT; ++i) {
         screenButtons[i].draw();
     }
-
     // Az utolsó gombot letiltjuk
     screenButtons[FM_SCREEN_BUTTONS_COUNT - 1].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
@@ -206,37 +222,29 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
 /**
  * Mono/Stereo vétel megjelenítése
  */
-void FmDisplay::showMonoStereo() {
-
-    static bool prevCurrentPilot = false;
-    bool currentPilot = si4735.getCurrentPilot();
-    // Ha nem változott, nem frissítünk
-    if (currentPilot == prevCurrentPilot) {
-        return;
-    }
-    prevCurrentPilot = currentPilot; // Frissítsük az előző értéket
+void FmDisplay::showMonoStereo(bool stereo) {
 
     // STEREO/MONO háttér
-    uint32_t backGroundColor = currentPilot ? TFT_RED : TFT_BLUE;
+    uint32_t backGroundColor = stereo ? TFT_RED : TFT_BLUE;
     tft.fillRect(freqDispX + 191, freqDispY + 60, 38, 12, backGroundColor);
 
     // Felirat
+    tft.setFreeFont();
     tft.setTextColor(TFT_WHITE, backGroundColor);
     tft.setTextSize(1);
     tft.setTextDatum(BC_DATUM);
     tft.setTextPadding(0);
     char buffer[10]; // Useful to handle string
-    sprintf(buffer, "%s", si4735.getCurrentPilot() ? "STEREO" : "MONO");
+    sprintf(buffer, "%s", stereo ? "STEREO" : "MONO");
     tft.drawString(buffer, freqDispX + 210, freqDispY + 71);
 }
 
 /**
- * Loop esemény kezelése
- * Változó Adatok (mono/sztereo, RDS, rssi) időzített megjelenítése
+ * Adatok periódikus megjelenítése
  */
-void FmDisplay::handleLoop() {
+void FmDisplay::displayValues() {
 
-    // Náhány adatot csak ritkábban frissítünk
+    // Néhány adatot csak ritkábban frissítünk
     static long elapsedTimedValues = 0; // Kezdőérték nulla
     if ((millis() - elapsedTimedValues) >= SCREEN_COMPS_REFRESH_TIME_MSEC) {
 
@@ -250,7 +258,13 @@ void FmDisplay::handleLoop() {
         pRds->showRDS(snr);
 
         // Mono/Stereo
-        this->showMonoStereo();
+        static bool prevStereo = false;
+        bool stereo = si4735.getCurrentPilot();
+        // Ha változott, akkor frissítünk
+        if (stereo != prevStereo) {
+            this->showMonoStereo(stereo);
+            prevStereo = stereo; // Frissítsük az előző értéket
+        }
 
         // Frissítjük az időbélyeget
         elapsedTimedValues = millis();
@@ -262,5 +276,17 @@ void FmDisplay::handleLoop() {
     if (lastFreq != currFreq) {
         pFreqDisplay->FreqDraw(currFreq, 0);
         lastFreq = currFreq;
+    }
+}
+
+/**
+ * Loop esemény kezelése
+ * Változó Adatok (mono/sztereo, RDS, rssi) időzített megjelenítése
+ */
+void FmDisplay::handleLoop() {
+
+    // Ha nincs dialóg, akkor megjeleníthetjük az értékeket
+    if (!dialog) {
+        displayValues();
     }
 }
