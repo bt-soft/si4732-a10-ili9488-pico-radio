@@ -9,12 +9,14 @@
 #include "MultiButtonDialog.h"
 #include "PopUpDialog.h"
 
-#define SCREEN_BUTTONS_X_START 5 // Gombok kezdő X koordinátája
-#define SCREEN_BUTTONS_Y 280
-#define SCREEN_BUTTON_HEIGHT 30
-#define SCREEN_BUTTON_WIDTH 70
-#define SCREEN_BUTTONS_GAP 10 // Define the gap between buttons
-#define SCREEN_BUTTONS_X(n) (SCREEN_BUTTONS_X_START + (SCREEN_BUTTON_WIDTH + SCREEN_BUTTONS_GAP) * n)
+// Képernyő gomb méret és pozíció definíciók
+#define SCREEN_BTNS_X_START 5   // Gombok kezdő X koordinátája
+#define SCREEN_BTNS_Y_START 250 // Gombok kezdő Y koordinátája
+#define SCREEN_BTN_H 30         // Gombok magassága
+#define SCREEN_BTN_W 70         // Gombok szélessége
+#define SCREEN_BTNS_GAP 10      // Gombok közötti gap
+#define SCREEN_BTNS_X(n) (SCREEN_BTNS_X_START + (SCREEN_BTN_W + SCREEN_BTNS_GAP) * n)
+
 #define SCREEN_COMPS_REFRESH_TIME_MSEC 500 // Változó adatok frissítési ciklusideje
 
 class DisplayBase {
@@ -70,7 +72,10 @@ public:
     /**
      *
      */
-    DisplayBase(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config) : tft(tft), si4735(si4735), band(band), config(config) {}
+    DisplayBase(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config)
+        : tft(tft), si4735(si4735), band(band), config(config), screenWidth(tft.width()) {
+        clearLastButton();
+    }
 
     /**
      *
@@ -114,6 +119,21 @@ public:
         } catch (const std::exception &e) {
             DEBUG("Hiba a handleLoop() függvényben: %s\n", e.what());
         }
+    }
+
+protected:
+    // A Screen gombok automatikus elhelyezéséhez használjuk
+    // Statikus, mert mindegyik képernyőnél ugyan akkora a TFT szélessége
+    static uint16_t screenWidth;
+
+    uint16_t getAutoX(uint8_t index) {
+        uint8_t buttonsPerRow = screenWidth / (SCREEN_BTN_W + SCREEN_BTNS_GAP);
+        return SCREEN_BTNS_X_START + ((SCREEN_BTN_W + SCREEN_BTNS_GAP) * (index % buttonsPerRow));
+    }
+
+    uint16_t getAutoY(uint8_t index) {
+        uint8_t buttonsPerRow = screenWidth / (SCREEN_BTN_W + SCREEN_BTNS_GAP);
+        return SCREEN_BTNS_Y_START + ((SCREEN_BTN_H + SCREEN_BTNS_GAP) * (index / buttonsPerRow));
     }
 };
 
