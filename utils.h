@@ -41,9 +41,8 @@ void safeStrCpy(T (&dest)[N], const T *src) {
 /**
  * Várakozás a soros port megnyitására
  * @param pTft a TFT kijelző példánya
- * @param beeper a Beeper példánya
  */
-void debugWaitForSerial(TFT_eSPI *pTft, Beeper *beeper);
+void debugWaitForSerial(TFT_eSPI *pTft);
 
 /**
  * Tömb elemei nullák?

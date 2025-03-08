@@ -5,15 +5,15 @@
  * @param pTft a TFT kijelző példánya
  * @param beeper a Beeper példánya
  */
-void debugWaitForSerial(TFT_eSPI *pTft, Beeper *beeper) {
+void debugWaitForSerial(TFT_eSPI *pTft) {
 #ifdef __DEBUG
-    beeper->error();
+    Beeper::error();
     pTft->setTextColor(TFT_WHITE);
     pTft->drawString("Nyisd meg a soros portot!", 0, 0);
     while (!Serial) {
     }
     pTft->fillScreen(TFT_BLACK);
-    beeper->tick();
+    Beeper::tick();
 #endif
 }
 

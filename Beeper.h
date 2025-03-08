@@ -1,6 +1,7 @@
 #ifndef __BEEPER_H__
 #define __BEEPER_H__
 
+#include "pinout.h"
 #include <Arduino.h>
 
 /**
@@ -8,40 +9,27 @@
  */
 class Beeper {
 
-private:
-    uint8_t beeperPin;
-
 public:
     /**
-     * Konstruktor
-     * @param beeperPin hangszóró lába
+     *  Pitty hangjelzés
      */
-    Beeper(uint8_t beeperPin) {
-        this->beeperPin = beeperPin;
-        pinMode(beeperPin, OUTPUT);
-        digitalWrite(beeperPin, LOW);
-    }
-
-    /**
-     *  Hangjelzés
-     */
-    void tick() {
-        tone(beeperPin, 800);
+    static void tick() {
+        tone(PIN_BEEPER, 800);
         delay(10);
-        noTone(beeperPin);
+        noTone(PIN_BEEPER);
     }
 
     /**
      * Hiba jelzés
      */
-    void error() {
-        tone(beeperPin, 500);
+    static void error() {
+        tone(PIN_BEEPER, 500);
         delay(100);
-        tone(beeperPin, 500);
+        tone(PIN_BEEPER, 500);
         delay(100);
-        tone(beeperPin, 500);
+        tone(PIN_BEEPER, 500);
         delay(100);
-        noTone(beeperPin);
+        noTone(PIN_BEEPER);
     }
 };
 #endif

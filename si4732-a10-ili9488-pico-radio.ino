@@ -23,7 +23,6 @@ RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN
 
 //------------------- beeper
 #include "Beeper.h"
-Beeper beeper = Beeper(PIN_BEEPER);
 
 //------------------- si4735
 #include <SI4735.h>
@@ -55,11 +54,15 @@ void setup() {
     pinMode(LED_BUILTIN, OUTPUT);
 #endif
 
+    // Beeper
+    pinMode(PIN_BEEPER, OUTPUT);
+    digitalWrite(PIN_BEEPER, LOW);
+
     // TFT LED kimenet
     pinMode(PIN_DISPLAY_LED, OUTPUT);
     digitalWrite(PIN_DISPLAY_LED, 0);
 
-    // Rotary Encoder felhúzása
+    // Rotary Encoder beállítása
     rotaryEncoder.setDoubleClickEnabled(true);
     rotaryEncoder.setAccelerationEnabled(true);
 
@@ -81,15 +84,15 @@ void setup() {
     tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
-    // debugWaitForSerial(&tft, &beeper);
+    debugWaitForSerial(&tft);
 
     // Ha a bekapcsolás alatt nyomva tartjuk a rotary gombját, akkor töröljük a konfigot
     if (digitalRead(PIN_ENCODER_SW) == LOW) {
-        beeper.tick();
+        Beeper::tick();
         delay(1500);
         if (digitalRead(PIN_ENCODER_SW) == LOW) { // Ha még mindig nyomják
             config.loadDefaults();
-            beeper.tick();
+            Beeper::tick();
             DEBUG("Default settings resored!\n");
         }
     } else {
@@ -99,7 +102,7 @@ void setup() {
 
     // Kell kalibrálni a TFT Touch-t?
     if (isZeroArray(config.data.tftCalibrateData)) {
-        beeper.error();
+        Beeper::error();
         tftTouchCalibrate(&tft, config.data.tftCalibrateData);
     }
     // Beállítjuk a touch scren-t
@@ -117,7 +120,7 @@ void setup() {
         const char *txt = "Si4735 not detected";
         tft.print(txt);
         DEBUG(txt);
-        beeper.error();
+        Beeper::error();
         while (true) // nem megyünk tovább
             ;
     }
