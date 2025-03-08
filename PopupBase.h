@@ -4,7 +4,6 @@
 #include <TFT_eSPI.h>
 #include <stdlib.h>
 
-#define DIALOG_CLOSE_BUTTON_LABEL "X"                 // Jobb felső sarok bezáró gomb
 #define DIALOG_DEFAULT_BUTTONS_GAP 10                 // A gombok közötti térköz pixelekben
 #define DIALOG_DEFAULT_BUTTON_HEIGHT 30               // Gomb(ok) magassága a dialógusban
 #define DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X (2 * 15) // 15-15px X padding a gombok szövegépen
@@ -136,6 +135,17 @@ protected:
 
         return false;
     }
+
+public:
+    // Gomb konstansok
+    static constexpr uint8_t DIALOG_UNDEFINED_BUTTON_ID = 0;    // 'üres'/'nincs' megnyomott button ID
+    static constexpr uint8_t DIALOG_OK_BUTTON_ID = 1;           // OK gomb ID-je
+    static constexpr uint8_t DIALOG_CANCEL_BUTTON_ID = 2;       // Cancel gomb ID-je
+    static constexpr uint8_t DIALOG_MULTI_BUTTON_ID_START = 10; // A multi buttonok kezdő ID-je
+
+    //'X' gomb konstansok
+    static constexpr const char *DIALOG_CLOSE_BUTTON_LABEL = "X"; // Jobb felső sarok bezáró gomb felirata
+    static constexpr uint8_t DIALOG_CLOSE_BUTTON_ID = 254;        // Jobb felső sarok bezáró gomb ID-je
 };
 
 #endif

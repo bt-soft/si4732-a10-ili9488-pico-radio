@@ -108,7 +108,7 @@ void setup() {
     // Beállítjuk a touch scren-t
     tft.setTouch(config.data.tftCalibrateData);
 
-    // si473x
+    // si473x (Nem a default I2C lábakon [4,5] van!!!)
     Wire.setSDA(PIN_SI4735_I2C_SDA); // I2C for SI4735 SDA
     Wire.setSCL(PIN_SI4735_I2C_SCL); // I2C for SI4735 SCL
     Wire.begin();

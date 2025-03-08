@@ -72,12 +72,12 @@ protected:
         uint16_t buttonY = contentY + DIALOG_DEFAULT_BUTTON_HEIGHT;
 
         // OK gomb
-        okButton = new TftButton(pTft, okX, buttonY, okButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
+        okButton = new TftButton(PopupBase::DIALOG_OK_BUTTON_ID, pTft, okX, buttonY, okButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
 
         // Cancel gomb, ha van
         if (cancelText) {
             uint16_t cancelX = okX + okButtonWidth + DIALOG_DEFAULT_BUTTONS_GAP; // A Cancel gomb X pozíciója
-            cancelButton = new TftButton(pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
+            cancelButton = new TftButton(PopupBase::DIALOG_CANCEL_BUTTON_ID, pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
         }
 
         // Megjelenítjük a dialógust
@@ -102,10 +102,10 @@ public:
         // Először meghívjuk a PopupBase érintéskezelőjét az 'X' detektálásához
         if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
 
-            // Megszerezzük a callback függvényt, és meghívjuk az "X" gombfelirattal
+            // Megszereztük a callback függvényt, jól meghívjuk az "X" id-jével és a feliratával
             ButtonCallback_t callback = okButton->getCallback();
             if (callback) {
-                callback(DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
+                callback(PopupBase::DIALOG_CLOSE_BUTTON_ID, PopupBase::DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
             }
             return;
         }

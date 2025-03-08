@@ -129,8 +129,8 @@ public:
             for (uint8_t i = 0; i < buttonCount; i++) {
                 callback = buttons[i]->getCallback();
                 if (callback) {
-                    // Megszereztük a callback függvényt, jól meghívjuk az "X" gombfelirattal
-                    callback(DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
+                    // Megszereztük a callback függvényt, jól meghívjuk az "X" id-jével és a feliratával
+                    callback(PopupBase::DIALOG_CLOSE_BUTTON_ID, PopupBase::DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
                     return;
                 }
             }

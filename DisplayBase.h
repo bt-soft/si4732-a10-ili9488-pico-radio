@@ -25,9 +25,26 @@ protected:
     Band &band;
     Config &config;
 
-    PopupBase *dialog = nullptr;       /// @brief dialógus pointer
-    const char *buttonLabel = nullptr; /// @brief Megnyomott gomb label
-    ButtonState_t buttonState;         /// @brief Megnyomott gomb állapota
+    PopupBase *dialog = nullptr; /// @brief dialógus pointer
+
+    struct ButtonInfo_t {
+        bool valid;
+        uint8_t id;
+        const char *label;
+        ButtonState_t state;
+    };
+    ButtonInfo_t lastButton; // Az utolsó megnyomott gomb adatai
+
+    /**
+     * Lenyomott gomb info törlése
+     */
+    void clearLastButton() {
+        lastButton = {
+            false,
+            PopupBase::DIALOG_UNDEFINED_BUTTON_ID,
+            nullptr,
+            ButtonState_t::UNKNOWN};
+    }
 
     /**
      * Rotary encoder esemény kezelése

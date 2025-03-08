@@ -10,12 +10,14 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, 
     : DisplayBase(tft, si4735, band, config), freqDispX(freqDispX), freqDispY(freqDispY) {
 
     // Dinamikusan létrehozzuk a gombokat
-    screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];
-    screenButtons[0] = TftButton(&tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[1] = TftButton(&tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[2] = TftButton(&tft, SCREEN_BUTTONS_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[3] = TftButton(&tft, SCREEN_BUTTONS_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[4] = TftButton(&tft, SCREEN_BUTTONS_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+
+    uint8_t multiButtonId = PopupBase::DIALOG_MULTI_BUTTON_ID_START; // Kezdő multiButton ID érték
+    screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];          // Lefoglaljuk a gombok tömbjét
+    screenButtons[0] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+    screenButtons[1] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+    screenButtons[2] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+    screenButtons[3] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+    screenButtons[4] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
 
     // SMeter példányosítása
     pSMeter = new SMeter(tft, 0, 80);
@@ -96,13 +98,13 @@ void FmDisplay::drawScreen() {
 /**
  * Gombok callback
  * A megnyomott gomb visszaadja a label-jét és az állapotát
+ * @param id megnyomott gomb ID-je
  * @param label megnyomott gomb label
  * @param state megnyomott gomb állapota
  */
-void FmDisplay::ButtonCallback_t(const char *label, ButtonState_t state) {
-    buttonLabel = label;
-    buttonState = state;
-    DEBUG("ButtonCallback_t -> label: %s, state: %s\n", buttonLabel, TftButton::decodeState(buttonState));
+void FmDisplay::ButtonCallback_t(const uint8_t id, const char *label, ButtonState_t state) {
+    lastButton = {true, id, label, state};
+    DEBUG("ButtonCallback_t -> id: %d, label: %s, state: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
 }
 
 /**
@@ -122,9 +124,12 @@ void FmDisplay::createMultiButtonDialog(const char *buttonLabels[], int buttonsC
 #define MULTI_BUTTON_W 80
 #define MULTI_BUTTON_H 30
 
+    // Kezdő multiButton ID érték
+    uint8_t multiButtonId = PopupBase::DIALOG_MULTI_BUTTON_ID_START;
+
     TftButton **multiButtons = new TftButton *[buttonsCount];
     for (uint8_t i = 0; i < buttonsCount; i++) {
-        multiButtons[i] = new TftButton(&tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+        multiButtons[i] = new TftButton(multiButtonId++, &tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
     }
     dialog = MultiButtonDialog::createDialog(&tft, 400, 260, F("Valasszon opciot!"), multiButtons, buttonsCount);
 }
@@ -134,10 +139,10 @@ void FmDisplay::createMultiButtonDialog(const char *buttonLabels[], int buttonsC
  */
 void FmDisplay::handleScreenButtonPress() {
 
-    if (strcmp("Popup", buttonLabel) == 0) {
+    if (strcmp("Popup", lastButton.label) == 0) {
         createPopupDialog();
 
-    } else if (strcmp("Multi", buttonLabel) == 0) {
+    } else if (strcmp("Multi", lastButton.label) == 0) {
 
         const __FlashStringHelper *buttonLabels[] = {
             F("OK"), F("Cancel"), F("Retry-1"), F("Retry-2"), F("Retry-3"), F("Retry-4"), F("Retry-5"), F("Retry-6"),
@@ -145,11 +150,11 @@ void FmDisplay::handleScreenButtonPress() {
 
         createMultiButtonDialog(reinterpret_cast<const char **>(buttonLabels), ARRAY_ITEM_COUNT(buttonLabels));
 
-    } else if (strcmp("FS List", buttonLabel) == 0) {
+    } else if (strcmp("FS List", lastButton.label) == 0) {
         // TouchCalibrate::listAllFilesInDir();
 
     } else {
-        DEBUG("Screen button Label: '%s', állapot változás: %s\n", buttonLabel, TftButton::decodeState(buttonState));
+        DEBUG("Screen button Id: %d, Label: '%s', állapot változás: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
     }
 }
 
@@ -192,19 +197,19 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
     }
 
     // Nyomtak gombot?
-    if (buttonLabel) {
+    if (lastButton.valid) {
         if (!dialog) {
             handleScreenButtonPress();
 
         } else {
             // Van dialog és megnyomtak rajta egy gombot
-            DEBUG("Dialóg button Label: '%s', állapot változás: %s\n", buttonLabel, TftButton::decodeState(buttonState));
+            DEBUG("Dialóg button Id: %d, Label: '%s', állapot változás: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
 
             // 'X'-el zárták be a dialógot?
-            if (dialog and strcmp(DIALOG_CLOSE_BUTTON_LABEL, buttonLabel) == 0) {
+            if (lastButton.id == PopupBase::DIALOG_CLOSE_BUTTON_ID) {
                 delete dialog;
                 dialog = nullptr;
-                buttonLabel = nullptr;
+                clearLastButton();
                 drawScreen();
                 return;
             }
@@ -215,7 +220,7 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
             drawScreen();
         }
         // Töröljük a gombnyomás eseményét
-        buttonLabel = nullptr;
+        clearLastButton();
     }
 }
 
