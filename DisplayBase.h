@@ -25,8 +25,9 @@ protected:
     Band &band;
     Config &config;
 
-    PopupBase *dialog = nullptr; /// @brief dialógus pointer
+    PopupBase *dialog = nullptr; // Dialógus pointer
 
+    // Lenyomott gomb info
     struct ButtonInfo_t {
         bool valid;
         uint8_t id;
