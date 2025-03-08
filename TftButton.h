@@ -19,9 +19,10 @@ typedef enum ButtonType_t {
     PUSHABLE
 } ButtonType;
 
-// Callback típusa
-// typedef void (*ButtonCallback)(const char *, ButtonState_t);
+// Callback típusa egy osztály metódusára
 typedef std::function<void(const char *, ButtonState_t)> ButtonCallback;
+// Makró egy osztály callback referenciájának átadására
+#define SCREEN_BUTTON_CALLBACK(ClassName, instance) std::bind(&ClassName::buttonCallback, instance, std::placeholders::_1, std::placeholders::_2)
 
 class TftButton {
 
