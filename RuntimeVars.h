@@ -24,4 +24,7 @@ extern long squelchDecay;
 // Scan
 extern bool SCANpause;
 
+// Seek
+extern bool SEEK;
+
 #endif

@@ -2,6 +2,7 @@
 #define __FMDISPLAY_H
 
 #include "DisplayBase.h"
+#include "FrequDisplay.h"
 #include "Rds.h"
 #include "SMeter.h"
 
@@ -15,10 +16,11 @@ private:
 
     void showMonoStereo();
 
-    uint16_t freqX, freqY;
+    uint16_t freqDispX, freqDispY;
     TftButton *screenButtons; // Dinamikusan létrehozott gombok tömbje
     SMeter *pSMeter;
     RDS *pRds;
+    FreqDisplay *pFreqDisplay;
 
 protected:
     /**
@@ -41,7 +43,7 @@ protected:
     void handleLoop() override;
 
 public:
-    FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqX, uint16_t freqY);
+    FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqDispX, uint16_t freqDispY);
     virtual ~FmDisplay();
     void drawScreen() override;
 };

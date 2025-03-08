@@ -6,8 +6,8 @@
 /**
  * Konstruktor
  */
-FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqX, uint16_t freqY)
-    : DisplayBase(tft, si4735, band, config), freqX(freqX), freqY(freqY) {
+FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqDispX, uint16_t freqDispY)
+    : DisplayBase(tft, si4735, band, config), freqDispX(freqDispX), freqDispY(freqDispY) {
 
     // Dinamikusan létrehozzuk a gombokat
     screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];
@@ -27,6 +27,8 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, 
                    2, 42,  // Time x,y
                    0, 140  // program type x,y
     );
+
+    pFreqDisplay = new FreqDisplay(tft, band, config, freqDispX, freqDispY);
 }
 
 /**
@@ -47,6 +49,11 @@ FmDisplay::~FmDisplay() {
     if (pRds) {
         delete pRds;
     }
+
+    // Frekvencia kijelző törlése
+    if (pFreqDisplay) {
+        delete pFreqDisplay;
+    }
 }
 
 /**
@@ -58,7 +65,7 @@ void FmDisplay::drawScreen() {
     tft.fillScreen(TFT_BLACK);
     tft.setTextFont(2);
 
-    // RSI skála
+    // RSI skála kirajzoltatása
     pSMeter->drawSmeterScale();
 
     // Megjelenítjük a képernyő gombokat
@@ -211,7 +218,7 @@ void FmDisplay::showMonoStereo() {
 
     // STEREO/MONO háttér
     uint32_t backGroundColor = currentPilot ? TFT_RED : TFT_BLUE;
-    tft.fillRect(freqX + 191, freqY + 60, 38, 12, backGroundColor);
+    tft.fillRect(freqDispX + 191, freqDispY + 60, 38, 12, backGroundColor);
 
     // Felirat
     tft.setTextColor(TFT_WHITE, backGroundColor);
@@ -220,7 +227,7 @@ void FmDisplay::showMonoStereo() {
     tft.setTextPadding(0);
     char buffer[10]; // Useful to handle string
     sprintf(buffer, "%s", si4735.getCurrentPilot() ? "STEREO" : "MONO");
-    tft.drawString(buffer, freqX + 210, freqY + 71);
+    tft.drawString(buffer, freqDispX + 210, freqDispY + 71);
 }
 
 /**
@@ -229,23 +236,31 @@ void FmDisplay::showMonoStereo() {
  */
 void FmDisplay::handleLoop() {
 
-    // Eltelt már SCREEN_COMPS_REFRESH_TIME_MSEC idő?
-    static long elapsedTimedValues = millis();
-    if ((millis() - elapsedTimedValues) < SCREEN_COMPS_REFRESH_TIME_MSEC) {
-        return;
+    // Náhány adatot csak ritkábban frissítünk
+    static long elapsedTimedValues = 0; // Kezdőérték nulla
+    if ((millis() - elapsedTimedValues) >= SCREEN_COMPS_REFRESH_TIME_MSEC) {
+
+        // RSSI
+        si4735.getCurrentReceivedSignalQuality();
+        uint8_t rssi = si4735.getCurrentRSSI();
+        uint8_t snr = si4735.getCurrentSNR();
+        pSMeter->showRSSI(rssi, snr, band.currentMode == FM);
+
+        // RDS
+        pRds->showRDS(snr);
+
+        // Mono/Stereo
+        this->showMonoStereo();
+
+        // Frissítjük az időbélyeget
+        elapsedTimedValues = millis();
     }
 
-    // RSSI
-    si4735.getCurrentReceivedSignalQuality();
-    uint8_t rssi = si4735.getCurrentRSSI();
-    uint8_t snr = si4735.getCurrentSNR();
-    pSMeter->showRSSI(rssi, snr, band.currentMode == FM);
-
-    // RDS
-    pRds->showRDS(snr);
-
-    // Mono/Stereo
-    this->showMonoStereo();
-
-    elapsedTimedValues = millis();
+    // A Freqkvenciát azonnal frisítjuk, de csak ha változott
+    static float lastFreq = 0;
+    float currFreq = band.getBandTable(config.data.bandIdx).currentFreq; // A Rotary változtatásakor már eltettük a Band táblába
+    if (lastFreq != currFreq) {
+        pFreqDisplay->FreqDraw(currFreq, 0);
+        lastFreq = currFreq;
+    }
 }

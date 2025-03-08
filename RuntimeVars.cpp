@@ -17,3 +17,6 @@ long squelchDecay = 0;
 
 // Scan
 bool SCANpause = true; // LWH - SCANpause must be initialized to a value else the squelch function will
+
+// Seek
+bool SEEK = false;
