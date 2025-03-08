@@ -13,11 +13,11 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, 
 
     uint8_t multiButtonId = PopupBase::DIALOG_MULTI_BUTTON_ID_START; // Kezdő multiButton ID érték
     screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];          // Lefoglaljuk a gombok tömbjét
-    screenButtons[0] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[1] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[2] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[3] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
-    screenButtons[4] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+    screenButtons[0] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
+    screenButtons[1] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
+    screenButtons[2] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
+    screenButtons[3] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
+    screenButtons[4] = TftButton(multiButtonId++, &tft, SCREEN_BUTTONS_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
 
     // SMeter példányosítása
     pSMeter = new SMeter(tft, 0, 80);
@@ -102,16 +102,16 @@ void FmDisplay::drawScreen() {
  * @param label megnyomott gomb label
  * @param state megnyomott gomb állapota
  */
-void FmDisplay::ButtonCallback_t(const uint8_t id, const char *label, ButtonState_t state) {
+void FmDisplay::buttonCallback(const uint8_t id, const char *label, ButtonState_t state) {
     lastButton = {true, id, label, state};
-    DEBUG("ButtonCallback_t -> id: %d, label: %s, state: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
+    DEBUG("buttonCallback -> id: %d, label: %s, state: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
 }
 
 /**
  * Dialógus ablak létrehozása
  */
 void FmDisplay::createPopupDialog() {
-    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCREEN_BUTTON_CALLBACK(FmDisplay, this), "Igen", "Lehet megse kellene");
+    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this), "Igen", "Lehet megse kellene");
 }
 
 /**
@@ -129,7 +129,7 @@ void FmDisplay::createMultiButtonDialog(const char *buttonLabels[], int buttonsC
 
     TftButton **multiButtons = new TftButton *[buttonsCount];
     for (uint8_t i = 0; i < buttonsCount; i++) {
-        multiButtons[i] = new TftButton(multiButtonId++, &tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
+        multiButtons[i] = new TftButton(multiButtonId++, &tft, MULTI_BUTTON_W, MULTI_BUTTON_H, buttonLabels[i], ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, buttonCallback, this));
     }
     dialog = MultiButtonDialog::createDialog(&tft, 400, 260, F("Valasszon opciot!"), multiButtons, buttonsCount);
 }
