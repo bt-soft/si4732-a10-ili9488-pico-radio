@@ -74,32 +74,34 @@ void Band::loadSSB() {
  */
 void Band::useBand() {
 
-    switch (bandTable[config.data.bandIdx].bandType) {
+    Band currentBand = bandTable[config.data.bandIdx];
+
+    switch (currentBand.bandType) {
 
     case LW_BAND_TYPE:
     case MW_BAND_TYPE:
     case SW_BAND_TYPE:
 
-        switch (bandTable[config.data.bandIdx].bandType) {
+        switch (currentBand.bandType) {
         case SW_BAND_TYPE:
-            bandTable[config.data.bandIdx].currentStep = config.data.ssIdxAM;
+            currentBand.currentStep = config.data.ssIdxAM;
             si4735.setTuneFrequencyAntennaCapacitor(1);
             break;
         default:
-            bandTable[config.data.bandIdx].currentStep = config.data.ssIdxMW;
+            currentBand.currentStep = config.data.ssIdxMW;
             si4735.setTuneFrequencyAntennaCapacitor(0);
             break;
         }
 
         if (ssbLoaded) {
-            si4735.setSSB(bandTable[config.data.bandIdx].minimumFreq, bandTable[config.data.bandIdx].maximumFreq, bandTable[config.data.bandIdx].currentFreq, bandTable[config.data.bandIdx].currentStep, currentMode);
+            si4735.setSSB(currentBand.minimumFreq, currentBand.maximumFreq, currentBand.currentFreq, currentBand.currentStep, currentMode);
             si4735.setSSBBfo(config.data.currentBFO + config.data.currentBFOmanu);
             // SSB ONLY 1KHz stepsize
             bandTable[config.data.bandIdx].currentStep = 1;
             si4735.setFrequencyStep(1);
 
         } else {
-            si4735.setAM(bandTable[config.data.bandIdx].minimumFreq, bandTable[config.data.bandIdx].maximumFreq, bandTable[config.data.bandIdx].currentFreq, bandTable[config.data.bandIdx].currentStep);
+            si4735.setAM(currentBand.minimumFreq, currentBand.maximumFreq, currentBand.currentFreq, currentBand.currentStep);
             bfoOn = false;
         }
         break;
@@ -107,9 +109,9 @@ void Band::useBand() {
     case FM_BAND_TYPE:
         ssbLoaded = false;
         bfoOn = false;
-        bandTable[config.data.bandIdx].currentStep = config.data.ssIdxFM;
+        currentBand.currentStep = config.data.ssIdxFM;
         si4735.setTuneFrequencyAntennaCapacitor(0);
-        si4735.setFM(bandTable[config.data.bandIdx].minimumFreq, bandTable[config.data.bandIdx].maximumFreq, bandTable[config.data.bandIdx].currentFreq, bandTable[config.data.bandIdx].currentStep);
+        si4735.setFM(currentBand.minimumFreq, currentBand.maximumFreq, currentBand.currentFreq, currentBand.currentStep);
         si4735.setFMDeEmphasis(1);
         si4735.RdsInit();
         si4735.setRdsConfig(1, 2, 2, 2, 2);
@@ -122,7 +124,7 @@ void Band::useBand() {
         break;
 
     default:
-        DEBUG("Hiba: Le nem kezelt bandType: %d\n", bandTable[config.data.bandIdx].bandType);
+        DEBUG("Hiba: Le nem kezelt bandType: %d\n", currentBand.bandType);
         return;
     }
 }
@@ -239,20 +241,4 @@ void Band::BandSet() {
     checkAGC();
 
     currentMode = bandTable[config.data.bandIdx].prefmod;
-}
-
-/**
- * Band tábla lekérdezése
- */
-BandTable_t &Band::getBandTable(uint8_t bandIdx) {
-
-    // if (bandIdx >= 0 && bandIdx < ARRAY_ITEM_COUNT(bandTable)) {
-    //     return bandTable[bandIdx];
-    // } else {
-    //     // Kezelni kell a hibát, például egy alapértelmezett értéket visszaadni
-    //     // Vagy hibát jelezni
-    //     return bandTable[0]; // például az első elem alapértelmezettként
-    // }
-
-    return bandTable[bandIdx];
 }

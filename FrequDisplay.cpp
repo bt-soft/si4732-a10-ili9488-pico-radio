@@ -82,17 +82,20 @@ void FreqDisplay::FreqDraw(float freq, int d) {
     // ELőző érték törlése
     tft.fillRect(freqDispX + 46 + d, freqDispY + 20, 194, 40, TFT_BLACK);
 
+    // FM?
     if (band.currentMode == FM) {
         displayFreq = freq / 100;
         Segment(String(displayFreq, 2), "188.88", d - 10);
 
     } else {
-        if (band.getBandTable(config.data.bandIdx).bandType == MW_BAND_TYPE or band.getBandTable(config.data.bandIdx).bandType == LW_BAND_TYPE) {
+        // AM vagy LW?
+        uint8_t bandType = band.getBandByIdx(config.data.bandIdx).bandType;
+        if (bandType == MW_BAND_TYPE or bandType == LW_BAND_TYPE) {
             displayFreq = freq;
             Segment(String(displayFreq, 0), "1888", d);
             unitStr = "kHz";
 
-        } else { // SW
+        } else { // SW !
             displayFreq = freq / 1000;
             Segment(String(displayFreq, 3), "88.888", d);
         }

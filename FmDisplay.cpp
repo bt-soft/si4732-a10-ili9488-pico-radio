@@ -152,7 +152,7 @@ void FmDisplay::handleRotaryEncoder(RotaryEncoder::EncoderState encoderState) {
         break;
     }
 
-    band.getBandTable(config.data.bandIdx).currentFreq = si4735.getFrequency();
+    band.getBandByIdx(config.data.bandIdx).currentFreq = si4735.getFrequency();
     pRds->clearRds();
 }
 
@@ -258,7 +258,7 @@ void FmDisplay::handleLoop() {
 
     // A Freqkvenciát azonnal frisítjuk, de csak ha változott
     static float lastFreq = 0;
-    float currFreq = band.getBandTable(config.data.bandIdx).currentFreq; // A Rotary változtatásakor már eltettük a Band táblába
+    float currFreq = band.getBandByIdx(config.data.bandIdx).currentFreq; // A Rotary változtatásakor már eltettük a Band táblába
     if (lastFreq != currFreq) {
         pFreqDisplay->FreqDraw(currFreq, 0);
         lastFreq = currFreq;

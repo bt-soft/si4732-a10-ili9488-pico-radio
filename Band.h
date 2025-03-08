@@ -56,7 +56,10 @@ public:
     void BandInit();
     void BandSet();
 
-    BandTable_t &getBandTable(uint8_t bandIdx);
+    /**
+     * A Band egy rekordjának elkérése az index alapján
+     */
+    BandTable_t &getBandByIdx(uint8_t bandIdx) { return bandTable[bandIdx]; }
 };
 
 #endif
