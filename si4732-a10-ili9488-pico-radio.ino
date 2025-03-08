@@ -152,35 +152,12 @@ void loop() {
 
     // Rotary Encoder olvasása
     RotaryEncoder::EncoderState encoderState = rotaryEncoder.read();
-    if (encoderState.direction != RotaryEncoder::Direction::NONE) {
-        switch (encoderState.direction) {
-        case RotaryEncoder::Direction::UP:
-            DEBUG("Rotary Direction UP\n");
-            break;
-        case RotaryEncoder::Direction::DOWN:
-            DEBUG("Rotary Direction DOWN\n");
-            break;
-        }
-    } else if (encoderState.buttonState != RotaryEncoder::ButtonState::Open) {
-        switch (encoderState.buttonState) {
-        case RotaryEncoder::ButtonState::Pressed:
-            DEBUG("Rotary Button Pressed\n");
-            break;
-        case RotaryEncoder::ButtonState::Held:
-            DEBUG("Rotary Button Held\n");
-            break;
-        case RotaryEncoder::ButtonState::Released:
-            DEBUG("Rotary Button Released\n");
-            break;
-        case RotaryEncoder::ButtonState::Clicked:
-            DEBUG("Rotary Button Clicked\n");
-            break;
-        case RotaryEncoder::ButtonState::DoubleClicked:
-            DEBUG("Rotary Button DoubleClicked\n");
-            break;
-        }
+    if (encoderState.buttonState == RotaryEncoder::ButtonState::Held) {
+        // TODO: Kikapcsolás figyelését még implementálni
+        DEBUG("Ki kellene kapcsolni...\n");
+        delay(1000);
+        return;
     }
-    // TODO: Kikapcsolás figyelését még implementálni
 
     // Aktuális Display loopja
     pDisplay->handeLoop(encoderState);
