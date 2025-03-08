@@ -7,6 +7,7 @@
 #include <TFT_eSPI.h> // TFT_eSPI könyvtár
 TFT_eSPI tft;         // TFT objektum
 // TFT_eSprite spr = TFT_eSprite(&tft); // Sprite objektum
+#include "ESP_free_fonts.h"
 
 #include "FmDisplay.h"
 DisplayBase *pDisplay;
@@ -40,6 +41,11 @@ Config config;
 #include "Band.h"
 Band band(si4735, config);
 
+//------------------- Runtime variables
+#include "RuntimeVars.h"
+
+//--------------------------------------------------------------------------------------------------------------------------------------
+
 /**
  * Arduino setup
  */
@@ -72,6 +78,7 @@ void setup() {
     tft.init();
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
+    tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
     // debugWaitForSerial(&tft, &beeper);
@@ -149,6 +156,27 @@ void loop() {
 
     // Lokkolunk, hogy ne tudjuk menteni az EEPROM-ot a változtatások közben
     CoreMutex mtx(&saveEepromMutex);
+
+    // ======================= Manage Squelch =========================
+    // squelchIndicator(pCfg->vars.currentSquelch);
+    if (!muteStat) {
+        si4735.getCurrentReceivedSignalQuality();
+        uint8_t rssi = si4735.getCurrentRSSI();
+        uint8_t snr = si4735.getCurrentSNR();
+
+        uint8_t signalQuality = config.data.squelchUsesRSSI ? rssi : snr;
+        if (signalQuality >= config.data.currentSquelch) {
+            if (SCANpause == true) {
+                si4735.setAudioMute(AUDIO_MUTE_OFF);
+                squelchDecay = millis();
+            }
+        } else {
+            if (millis() > (squelchDecay + SQUELCH_DECAY_TIME)) {
+                si4735.setAudioMute(AUDIO_MUTE_ON);
+            }
+        }
+    }
+    // ================================================================
 
     // Rotary Encoder olvasása
     RotaryEncoder::EncoderState encoderState = rotaryEncoder.read();

@@ -1,4 +1,16 @@
 {
+    // Az intellisense kizárása a build könyvtárból
+    "files.exclude": {
+        "**/build": true
+    },
+    "search.exclude": {
+        "**/build": true
+    },
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/**",
+        "!${workspaceFolder}/build/**"
+    ],
+
     "files.associations": {
         "memory": "cpp",
         "format": "cpp",

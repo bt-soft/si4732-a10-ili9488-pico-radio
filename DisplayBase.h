@@ -15,6 +15,7 @@
 #define SCREEN_BUTTON_WIDTH 70
 #define SCREEN_BUTTONS_GAP 10 // Define the gap between buttons
 #define SCREEN_BUTTONS_X(n) (SCREEN_BUTTONS_X_START + (SCREEN_BUTTON_WIDTH + SCREEN_BUTTONS_GAP) * n)
+#define SCREEN_COMPS_REFRESH_TIME_MSEC 500 // Változó adatok frissítési ciklusideje
 
 class DisplayBase {
 

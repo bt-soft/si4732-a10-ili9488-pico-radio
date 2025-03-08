@@ -1,0 +1,11 @@
+
+
+Calllback lambdával
+    TftButton(&tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
+               [this](const char *label, ButtonState_t state) {
+                   this->ButtonCallback_t(label, state);
+             }),
+
+Callback std::bind-el
+     screenButtons[1] = new TftButton(&tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
+                                      std::bind(&FmDisplay::ButtonCallback_t, this, std::placeholders::_1, std::placeholders::_2)),

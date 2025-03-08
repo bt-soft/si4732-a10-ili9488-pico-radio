@@ -2,6 +2,8 @@
 #define __FMDISPLAY_H
 
 #include "DisplayBase.h"
+#include "Rds.h"
+#include "SMeter.h"
 
 class FmDisplay : public DisplayBase {
 
@@ -11,6 +13,8 @@ private:
     void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount);
     void handleScreenButtonPress();
     TftButton *screenButtons; // Dinamikusan létrehozott gombok tömbje
+    SMeter *pSMeter;
+    RDS *pRds;
 
 protected:
     /**

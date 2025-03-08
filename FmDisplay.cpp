@@ -8,31 +8,43 @@
  */
 FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config) : DisplayBase(tft, si4735, band, config) {
 
-    // Makró a callback-ra
-
     // Dinamikusan létrehozzuk a gombokat
     screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];
-
     screenButtons[0] = TftButton(&tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
     screenButtons[1] = TftButton(&tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Multi"), ButtonType::PUSHABLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
     screenButtons[2] = TftButton(&tft, SCREEN_BUTTONS_X(2), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-1"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
     screenButtons[3] = TftButton(&tft, SCREEN_BUTTONS_X(3), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Sw-2"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
     screenButtons[4] = TftButton(&tft, SCREEN_BUTTONS_X(4), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Dis"), ButtonType::TOGGLE, SCREEN_BUTTON_CALLBACK(FmDisplay, this));
 
-    // TftButton(&tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
-    //           [this](const char *label, ButtonState_t state) {
-    //               this->ButtonCallback_t(label, state);
-    //           }),
-    // screenButtons[1] = new TftButton(&tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
-    //                                  std::bind(&FmDisplay::ButtonCallback_t, this, std::placeholders::_1, std::placeholders::_2)),
+    // SMeter példányosítása
+    pSMeter = new SMeter(tft, 0, 80);
+
+    // RDS példányosítása
+    pRds = new RDS(tft, si4735,
+                   80, 62, // Station x,y
+                   0, 80,  // Message x,y
+                   2, 42,  // Time x,y
+                   0, 140  // program type x,y
+    );
 }
 
 /**
  * Destruktor
  */
 FmDisplay::~FmDisplay() {
+    // Gombok trölése
     if (screenButtons) {
-        delete[] screenButtons; // A dinamikus memória felszabadítása
+        delete[] screenButtons;
+    }
+
+    // SMeter trölése
+    if (pSMeter) {
+        delete pSMeter;
+    }
+
+    // RDS trölése
+    if (pRds) {
+        delete pRds;
     }
 }
 
@@ -41,15 +53,19 @@ FmDisplay::~FmDisplay() {
  */
 void FmDisplay::drawScreen() {
 
+    tft.setFreeFont();
     tft.fillScreen(TFT_BLACK);
     tft.setTextFont(2);
+
+    // RSI skála
+    pSMeter->drawSmeterScale();
 
     // Megjelenítjük a képernyő gombokat
     for (uint8_t i = 0; i < FM_SCREEN_BUTTONS_COUNT; ++i) {
         screenButtons[i].draw();
     }
 
-    // Az utolsót letiltjuk
+    // Az utolsó gombot letiltjuk
     screenButtons[FM_SCREEN_BUTTONS_COUNT - 1].setState(ButtonState::DISABLED); // A gomb alapértelmezés szerint le van tiltva
 }
 
@@ -129,6 +145,7 @@ void FmDisplay::handleRotaryEncoder(RotaryEncoder::EncoderState encoderState) {
     }
 
     band.getBandTable(config.data.bandIdx).currentFreq = si4735.getFrequency();
+    pRds->clearRds();
 }
 
 /**
@@ -142,6 +159,7 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
     // Ha van dialóg, akkor annak a gombjainak a touch eseményeit hívjuk
     if (dialog) {
         dialog->handleTouch(touched, tx, ty);
+
     } else {
         // Ha nincs dialóg, de vannak képernyő gombok, akkor azok touch eseményeit hívjuk meg
         for (uint8_t i = 0; i < FM_SCREEN_BUTTONS_COUNT; ++i) {
@@ -179,6 +197,26 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
 
 /**
  * Loop esemény kezelése
+ * Változó Adatok (mono/sztereo, RDS, rssi) időzített megjelenítése
  */
 void FmDisplay::handleLoop() {
+
+    // Eltelt már SCREEN_COMPS_REFRESH_TIME_MSEC idő?
+    static long elapsedTimedValues = millis();
+    if ((millis() - elapsedTimedValues) < SCREEN_COMPS_REFRESH_TIME_MSEC) {
+        return;
+    }
+
+    // RSSI
+    si4735.getCurrentReceivedSignalQuality();
+    uint8_t rssi = si4735.getCurrentRSSI();
+    uint8_t snr = si4735.getCurrentSNR();
+    pSMeter->showRSSI(rssi, snr, band.currentMode == FM);
+
+    // RDS
+    pRds->showRDS(snr);
+
+    // Mono/Stereo
+
+    elapsedTimedValues = millis();
 }

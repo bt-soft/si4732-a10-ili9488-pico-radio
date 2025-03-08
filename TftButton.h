@@ -1,7 +1,6 @@
 #ifndef __TFT_BUTTON_H
 #define __TFT_BUTTON_H
 
-#include "ESP_free_fonts.h"
 #include "utils.h"
 
 // Gomb állapotai
