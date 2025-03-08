@@ -84,7 +84,7 @@ void setup() {
     tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
-    debugWaitForSerial(&tft);
+    // debugWaitForSerial(&tft);
 
     // Ha a bekapcsolás alatt nyomva tartjuk a rotary gombját, akkor töröljük a konfigot
     if (digitalRead(PIN_ENCODER_SW) == LOW) {
