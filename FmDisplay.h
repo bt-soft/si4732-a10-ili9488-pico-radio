@@ -12,6 +12,10 @@ private:
     void createPopupDialog();
     void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount);
     void handleScreenButtonPress();
+
+    void showMonoStereo();
+
+    uint16_t freqX, freqY;
     TftButton *screenButtons; // Dinamikusan létrehozott gombok tömbje
     SMeter *pSMeter;
     RDS *pRds;
@@ -37,7 +41,7 @@ protected:
     void handleLoop() override;
 
 public:
-    FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config);
+    FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqX, uint16_t freqY);
     virtual ~FmDisplay();
     void drawScreen() override;
 };

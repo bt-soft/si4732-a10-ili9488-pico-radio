@@ -6,7 +6,8 @@
 /**
  * Konstruktor
  */
-FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config) : DisplayBase(tft, si4735, band, config) {
+FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, uint16_t freqX, uint16_t freqY)
+    : DisplayBase(tft, si4735, band, config), freqX(freqX), freqY(freqY) {
 
     // Dinamikusan létrehozzuk a gombokat
     screenButtons = new TftButton[FM_SCREEN_BUTTONS_COUNT];
@@ -196,6 +197,33 @@ void FmDisplay::handleTouch(bool touched, uint16_t tx, uint16_t ty) {
 }
 
 /**
+ * Mono/Stereo vétel megjelenítése
+ */
+void FmDisplay::showMonoStereo() {
+
+    static bool prevCurrentPilot = false;
+    bool currentPilot = si4735.getCurrentPilot();
+    // Ha nem változott, nem frissítünk
+    if (currentPilot == prevCurrentPilot) {
+        return;
+    }
+    prevCurrentPilot = currentPilot; // Frissítsük az előző értéket
+
+    // STEREO/MONO háttér
+    uint32_t backGroundColor = currentPilot ? TFT_RED : TFT_BLUE;
+    tft.fillRect(freqX + 191, freqY + 60, 38, 12, backGroundColor);
+
+    // Felirat
+    tft.setTextColor(TFT_WHITE, backGroundColor);
+    tft.setTextSize(1);
+    tft.setTextDatum(BC_DATUM);
+    tft.setTextPadding(0);
+    char buffer[10]; // Useful to handle string
+    sprintf(buffer, "%s", si4735.getCurrentPilot() ? "STEREO" : "MONO");
+    tft.drawString(buffer, freqX + 210, freqY + 71);
+}
+
+/**
  * Loop esemény kezelése
  * Változó Adatok (mono/sztereo, RDS, rssi) időzített megjelenítése
  */
@@ -217,6 +245,7 @@ void FmDisplay::handleLoop() {
     pRds->showRDS(snr);
 
     // Mono/Stereo
+    this->showMonoStereo();
 
     elapsedTimedValues = millis();
 }

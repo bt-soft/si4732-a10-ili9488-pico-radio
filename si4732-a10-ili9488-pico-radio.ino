@@ -143,7 +143,7 @@ void setup() {
 
     // Képernyő példányosítása az aktuális mód alapján
     if (band.currentMode == FM) {
-        pDisplay = new FmDisplay(tft, si4735, band, config);
+        pDisplay = new FmDisplay(tft, si4735, band, config, 0, 0);
     } else {
         // pDisplay = new AmDisplay(tft, si4735, band);
     }

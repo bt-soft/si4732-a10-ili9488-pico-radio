@@ -116,14 +116,14 @@ void RDS::checkRds() {
     if (si4735.getRdsDateTime(&year, &month, &day, &hour, &minute)) {
         char dateTime[20];
         sprintf(dateTime, "%04d-%02d-%02d %02d:%02d", year, month, day, hour, minute);
-        DEBUG("RDS full datetime : %s", dateTime);
+        // DEBUG("RDS full datetime : %s  ", dateTime);
 
         tft.setTextSize(1);
         tft.setTextDatum(BC_DATUM);
         tft.setTextColor(TFT_YELLOW, TFT_BLACK);
         tft.setCursor(timeX, timeY);
         sprintf(dateTime, "%02d:%02d", hour, minute);
-        DEBUG("RDS time : %s", dateTime);
+        // DEBUG("RDS time : %s\n", dateTime);
         tft.print(dateTime);
     }
 
