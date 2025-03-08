@@ -129,11 +129,19 @@ protected:
     uint16_t screenWidth;
     uint16_t screenHeight;
 
+    /**
+     * Screen gombok automatikus X koordinátájának kiszámítása
+     * Ha nem férnek el egy sorban a gombok, akkor nyit egy új sort
+     */
     uint16_t getAutoX(uint8_t index) {
         uint8_t buttonsPerRow = screenWidth / (SCREEN_BTN_W + SCREEN_BTNS_GAP);
         return SCREEN_BTNS_X_START + ((SCREEN_BTN_W + SCREEN_BTNS_GAP) * (index % buttonsPerRow));
     }
 
+    /**
+     * Screen gombok automatikus Y koordinátájának kiszámítása
+     * A gombok több sorban is elhelyezkedhetnek, az alsó sor a képernyő aljához igazodik
+     */
     uint16_t getAutoY(uint8_t index, uint8_t screenButtonsCount) {
         uint8_t row = index / SCREEN_BUTTONS_PER_ROW; // Hányadik sorban van a gomb
 
