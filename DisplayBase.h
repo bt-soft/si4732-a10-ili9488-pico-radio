@@ -95,7 +95,7 @@ public:
      * Loop esemény kezelése
      * @param encoderState rotary encoder eredmény
      */
-    void handeLoop(RotaryEncoder::EncoderState encoderState) {
+    void handleLoop(RotaryEncoder::EncoderState encoderState) {
 
         // Rotary Encoder olvasása
         if (encoderState.direction != RotaryEncoder::Direction::NONE) {
@@ -123,8 +123,7 @@ public:
 
 protected:
     // A Screen gombok automatikus elhelyezéséhez használjuk
-    // Statikus, mert mindegyik képernyőnél ugyan akkora a TFT szélessége
-    static uint16_t screenWidth;
+    uint16_t screenWidth;
 
     uint16_t getAutoX(uint8_t index) {
         uint8_t buttonsPerRow = screenWidth / (SCREEN_BTN_W + SCREEN_BTNS_GAP);

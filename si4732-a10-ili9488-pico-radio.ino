@@ -192,5 +192,5 @@ void loop() {
     }
 
     // Aktuális Display loopja
-    pDisplay->handeLoop(encoderState);
+    pDisplay->handleLoop(encoderState);
 }
