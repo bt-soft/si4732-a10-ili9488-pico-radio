@@ -55,7 +55,7 @@ void setup() {
 
     // Rotary Encoder felhúzása
     rotaryEncoder.setDoubleClickEnabled(true);
-    rotaryEncoder.setAccelerationEnabled(false);
+    rotaryEncoder.setAccelerationEnabled(true);
 
     // Pico Ticker beállítása a Rotary Encoder olvasására
     rotaryTicker.attach_ms(ROTARY_ENCODER_TICKER_INTERVAL_MSEC, []() {
