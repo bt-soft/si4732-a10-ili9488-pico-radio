@@ -21,10 +21,10 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config) 
 
     // TftButton(&tft, SCREEN_BUTTONS_X(0), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
     //           [this](const char *label, ButtonState_t state) {
-    //               this->buttonCallback(label, state);
+    //               this->ButtonCallback_t(label, state);
     //           }),
     // screenButtons[1] = new TftButton(&tft, SCREEN_BUTTONS_X(1), SCREEN_BUTTONS_Y, SCREEN_BUTTON_WIDTH, SCREEN_BUTTON_HEIGHT, F("Popup"), ButtonType::PUSHABLE,
-    //                                  std::bind(&FmDisplay::buttonCallback, this, std::placeholders::_1, std::placeholders::_2)),
+    //                                  std::bind(&FmDisplay::ButtonCallback_t, this, std::placeholders::_1, std::placeholders::_2)),
 }
 
 /**
@@ -59,17 +59,17 @@ void FmDisplay::drawScreen() {
  * @param label megnyomott gomb label
  * @param state megnyomott gomb állapota
  */
-void FmDisplay::buttonCallback(const char *label, ButtonState_t state) {
+void FmDisplay::ButtonCallback_t(const char *label, ButtonState_t state) {
     buttonLabel = label;
     buttonState = state;
-    DEBUG("buttonCallback -> label: %s, state: %s\n", buttonLabel, TftButton::decodeState(buttonState));
+    DEBUG("ButtonCallback_t -> label: %s, state: %s\n", buttonLabel, TftButton::decodeState(buttonState));
 }
 
 /**
  * Dialógus ablak létrehozása
  */
 void FmDisplay::createPopupDialog() {
-    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), [this](const char *label, ButtonState_t state) { this->buttonCallback(label, state); }, "Igen", "Lehet megse kellene");
+    dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), [this](const char *label, ButtonState_t state) { this->ButtonCallback_t(label, state); }, "Igen", "Lehet megse kellene");
 }
 
 /**

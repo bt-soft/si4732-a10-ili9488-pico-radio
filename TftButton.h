@@ -20,9 +20,9 @@ typedef enum ButtonType_t {
 } ButtonType;
 
 // Callback típusa egy osztály metódusára
-typedef std::function<void(const char *, ButtonState_t)> ButtonCallback;
+typedef std::function<void(const char *, ButtonState_t)> ButtonCallback_t;
 // Makró egy osztály callback referenciájának átadására
-#define SCREEN_BUTTON_CALLBACK(ClassName, instance) std::bind(&ClassName::buttonCallback, instance, std::placeholders::_1, std::placeholders::_2)
+#define SCREEN_BUTTON_CALLBACK(ClassName, instance) std::bind(&ClassName::ButtonCallback_t, instance, std::placeholders::_1, std::placeholders::_2)
 
 class TftButton {
 
@@ -37,7 +37,7 @@ private:
     ButtonState state;
     ButtonState oldState;
     ButtonType type;
-    // ButtonCallback callback = nullptr;
+    // ButtonCallback_t callback = nullptr;
     std::function<void(const char *, ButtonState_t)> callback; // Callback függvény
     uint16_t colors[3] = {TFT_COLOR(65, 65, 114) /*normal*/, TFT_COLOR(65, 65, 114) /*pushed*/, TFT_COLOR(65, 65, 65) /* diabled */};
     bool buttonPressed; // Flag a gomb nyomva tartásának követésére
@@ -106,10 +106,10 @@ public:
     /// @param type típus (push, toggle)
     /// @param callback callback
     /// @param state aktuális állapot
-    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = nullptr, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback_t callback = nullptr, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
-    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback callback = nullptr, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback_t callback = nullptr, ButtonState state = OFF)
         : pTft(pTft), x(x), y(y), w(w), h(h), label(reinterpret_cast<const char *>(label)), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
     /// @brief Konstruktor csak a szélesség és a magasság megadásával.
@@ -121,10 +121,10 @@ public:
     /// @param type típus (push, toggle)
     /// @param callback callback
     /// @param state aktuális állapot
-    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType type, ButtonCallback_t callback = NULL, ButtonState state = OFF)
         : TftButton(pTft, w, h, reinterpret_cast<const char *>(label), type, callback, state) {}
 
-    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback callback = NULL, ButtonState state = OFF)
+    TftButton(TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType type, ButtonCallback_t callback = NULL, ButtonState state = OFF)
         : pTft(pTft), x(0), y(0), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
     /// @brief Destruktor
@@ -223,7 +223,7 @@ public:
     /// @brief Callback függvény elkérése
     /// A PopupBase 'X' gomb kezeléséhez kell
     /// @return
-    ButtonCallback getCallback() {
+    ButtonCallback_t getCallback() {
         return callback;
     }
 

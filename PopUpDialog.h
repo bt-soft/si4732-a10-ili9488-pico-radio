@@ -30,7 +30,7 @@ class PopUpDialog : public PopupBase {
 private:
     TftButton *okButton;
     TftButton *cancelButton;
-    ButtonCallback callback;
+    ButtonCallback_t callback;
 
     /// @brief A párbeszédablak komponenseinek megjelenítése
     virtual void drawDialog() override {
@@ -57,7 +57,7 @@ protected:
     /// @param callback Az OK gomb visszahívási függvénye.
     /// @param okText Az OK gomb felirata.
     /// @param cancelText A Cancel gomb felirata (opcionális).
-    PopUpDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr)
+    PopUpDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr)
         : PopupBase(pTft, w, h, title, message), callback(callback), cancelButton(nullptr) {
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
@@ -103,7 +103,7 @@ public:
         if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
 
             // Megszerezzük a callback függvényt, és meghívjuk az "X" gombfelirattal
-            ButtonCallback callback = okButton->getCallback();
+            ButtonCallback_t callback = okButton->getCallback();
             if (callback) {
                 callback(DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
             }
@@ -132,7 +132,7 @@ public:
      * @param cancelText A Cancel gomb szövege (alapértelmezett érték: nullptr).
      * @return PopUpDialog* Pointer az újonnan létrehozott PopUpDialog példányra.
      */
-    static PopUpDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback callback, const char *okText = "OK", const char *cancelText = nullptr) {
+    static PopUpDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr) {
         return new PopUpDialog(pTft, w, h, title, message, callback, okText, cancelText);
     }
 };

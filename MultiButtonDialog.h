@@ -123,7 +123,7 @@ public:
         if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
 
             // Megszerezzük valamelyik gombtól a callback függvényt, és meghívjuk az "X" gombfelirattal
-            ButtonCallback callback = nullptr;
+            ButtonCallback_t callback = nullptr;
 
             // Végigmegyünk az összes gombon és megkeressük az első nem NULL callback függvényt
             for (uint8_t i = 0; i < buttonCount; i++) {

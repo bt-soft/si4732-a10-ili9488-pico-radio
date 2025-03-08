@@ -6,7 +6,7 @@
 class FmDisplay : public DisplayBase {
 
 private:
-    void buttonCallback(const char *label, ButtonState_t state);
+    void ButtonCallback_t(const char *label, ButtonState_t state);
     void createPopupDialog();
     void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount);
     void handleScreenButtonPress();
