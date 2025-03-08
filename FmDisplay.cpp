@@ -30,6 +30,7 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, 
                    0, 140  // program type x,y
     );
 
+    // Frekvencia kijelzés pédányosítása
     pFreqDisplay = new FreqDisplay(tft, band, config, freqDispX, freqDispY);
 }
 
