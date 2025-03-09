@@ -10,8 +10,6 @@ class FmDisplay : public DisplayBase {
 
 private:
     void buttonCallback(const uint8_t id, const char *label, ButtonState_t state); // Gombok callback
-    void createPopupDialog();
-    void createMultiButtonDialog(const char *buttonLabels[], int buttonsCount);
     void handleScreenButtonPress();
 
     void showMonoStereo(bool stereo);

@@ -32,21 +32,6 @@ private:
     TftButton *cancelButton;
     ButtonCallback_t callback;
 
-    /// @brief A párbeszédablak komponenseinek megjelenítése
-    virtual void drawDialog() override {
-
-        // Kirajzoljuk a dialógot
-        PopupBase::drawDialog();
-
-        // Kirajzoljuk az OK gombot
-        okButton->draw();
-
-        // Ha van Cancel gomb, akkor kirajzoljuk azt is
-        if (cancelButton) {
-            cancelButton->draw();
-        }
-    }
-
 protected:
     /// @brief Párbeszédablak konstruktor
     /// @param pTft A TFT_eSPI példányra mutató pointer.
@@ -65,31 +50,50 @@ protected:
         uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
 
         // Ha van Cancel gomb, akkor a két gomb közötti gap-et is figyelembe vesszük
-        uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + DIALOG_DEFAULT_BUTTONS_GAP : okButtonWidth;
+        uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + DLG_BTN_GAP : okButtonWidth;
         uint16_t okX = x + (w - totalButtonWidth) / 2; // Az OK gomb X pozíciója -> a gombok kezdő X pozíciója
 
         // Gombok Y pozíció
-        uint16_t buttonY = contentY + DIALOG_DEFAULT_BUTTON_HEIGHT;
+        uint16_t buttonY = contentY + DLG_BTN_H;
 
         // OK gomb
-        okButton = new TftButton(PopupBase::DIALOG_OK_BUTTON_ID, pTft, okX, buttonY, okButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, okText, ButtonType::PUSHABLE, callback);
+        okButton = new TftButton(PopupBase::DIALOG_OK_BUTTON_ID, pTft, okX, buttonY, okButtonWidth, DLG_BTN_H, okText, ButtonType::PUSHABLE, callback);
 
         // Cancel gomb, ha van
         if (cancelText) {
-            uint16_t cancelX = okX + okButtonWidth + DIALOG_DEFAULT_BUTTONS_GAP; // A Cancel gomb X pozíciója
-            cancelButton = new TftButton(PopupBase::DIALOG_CANCEL_BUTTON_ID, pTft, cancelX, buttonY, cancelButtonWidth, DIALOG_DEFAULT_BUTTON_HEIGHT, cancelText, ButtonType::PUSHABLE);
+            uint16_t cancelX = okX + okButtonWidth + DLG_BTN_GAP; // A Cancel gomb X pozíciója
+            cancelButton = new TftButton(PopupBase::DIALOG_CANCEL_BUTTON_ID, pTft, cancelX, buttonY, cancelButtonWidth, DLG_BTN_H, cancelText, ButtonType::PUSHABLE);
         }
-
-        // Megjelenítjük a dialógust
-        drawDialog();
     }
 
 public:
-    /// @brief Párbeszédablak destruktor
+    /**
+     * Dialóg destruktor
+     */
     ~PopUpDialog() {
         delete okButton;
         if (cancelButton) {
             delete cancelButton;
+        }
+    }
+
+    /// @brief A párbeszédablak komponenseinek megjelenítése
+    virtual void drawDialog() override {
+
+        // Ha már látszik, nem rajzoljuk ki újra
+        if (visible) {
+            return;
+        }
+
+        // Kirajzoljuk a dialógot
+        PopupBase::drawDialog();
+
+        // Kirajzoljuk az OK gombot
+        okButton->draw();
+
+        // Ha van Cancel gomb, akkor kirajzoljuk azt is
+        if (cancelButton) {
+            cancelButton->draw();
         }
     }
 

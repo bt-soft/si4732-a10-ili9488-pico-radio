@@ -4,6 +4,9 @@
 #include "PopupBase.h"
 #include "TftButton.h"
 
+#define MULTI_BTN_W 80 // Multibutton dialog gombjainak szélessége
+#define MULTI_BTN_H 30 // Multibutton dialog gombjainak magassága
+
 /**
  * @class MultiButtonDialog
  * @brief Több gombos párbeszédpanel TFT képernyőn.
@@ -14,28 +17,87 @@
 class MultiButtonDialog : public PopupBase {
 
 private:
-    TftButton **buttons; ///< A megjelenítendő gombok mutatóinak tömbje.
-    uint8_t buttonCount; ///< A párbeszédpanelen lévő gombok száma.
+    /**
+     * @brief Kiszámítja a gombok elrendezését.
+     *
+     * @param maxRowWidth A rendelkezésre álló szélesség
+     * @param buttonsPerRow Hány gomb fér el egy sorban
+     * @param rowCount Hány sorra van szükség
+     */
+    void calculateButtonLayout(uint16_t maxRowWidth, uint8_t &buttonsPerRow, uint8_t &rowCount) {
+        uint16_t totalWidth = 0;
+        buttonsPerRow = 1;
+
+        // Megnézzük, hány gomb fér el egy sorban
+        totalWidth = buttons[0]->getWidth(); // Első gomb szélessége
+        for (uint8_t i = 1; i < buttonCount; i++) {
+            totalWidth += buttons[i]->getWidth() + DLG_BTN_GAP;
+            if (totalWidth > maxRowWidth) {
+                break;
+            }
+            buttonsPerRow++;
+        }
+
+        if (buttonsPerRow > 0) {
+            buttonsPerRow--;
+        }
+
+        rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
+    }
 
     /**
-     * @brief A párbeszédpanel megrajzolása a TFT képernyőn.
-     *
-     * Ez a metódus beállítja a szöveg színét, szöveg helyzetét, és megrajzolja az üzenetet és a gombokat a képernyőn.
+     * @brief Gombok elhelyezése a dialóguson belül.
      */
-    virtual void drawDialog() override {
+    void positionButtons(uint8_t buttonsPerRow, uint8_t rowCount) {
+        uint16_t buttonHeight = DLG_BTN_H;
+        uint16_t totalHeight = rowCount * buttonHeight + (rowCount - 1) * DLG_BTN_GAP;
 
-        // Kirajzoljuk a dialógot
-        PopupBase::drawDialog();
+        uint16_t startY = contentY;
+        uint8_t row = 0, col = 0;
+        uint16_t startX = 0;
 
-        // Gombok kirajzolása
         for (uint8_t i = 0; i < buttonCount; i++) {
-            buttons[i]->draw();
+            if (col == 0) {
+                uint16_t rowWidth = 0;
+                uint8_t itemsInRow = min(buttonsPerRow, buttonCount - i);
+                for (uint8_t j = 0; j < itemsInRow; j++) {
+                    rowWidth += buttons[i + j]->getWidth();
+                }
+                rowWidth += (itemsInRow - 1) * DLG_BTN_GAP;
+                startX = x + (w - rowWidth) / 2;
+            }
+
+            buttons[i]->setPosition(startX, startY);
+            startX += buttons[i]->getWidth() + DLG_BTN_GAP;
+            col++;
+
+            if (col >= buttonsPerRow) {
+                col = 0;
+                row++;
+                startY += buttonHeight + DLG_BTN_GAP;
+            }
         }
     }
 
 protected:
+    TftButton **buttons; // A megjelenítendő gombok mutatóinak tömbje.
+    uint8_t buttonCount; // A párbeszédpanelen lévő gombok száma.
+
     /**
-     * @brief MultiButtonDialog objektum létrehozása.
+     * Konstruktor gombok és üzenet nélkül,
+     * A gombokat majd a leszármazott adja hozzá
+     *
+     * @param pTft Pointer a TFT_eSPI objektumra.
+     * @param w A párbeszédpanel szélessége.
+     * @param h A párbeszédpanel magassága.
+     * @param title A dialógus címe (opcionális).
+     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
+     */
+    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title)
+        : PopupBase(pTft, w, h, title, nullptr), buttons(nullptr), buttonCount(0) {}
+
+    /**
+     * @brief MultiButtonDialog létrehozása gombokkal
      *
      * @param pTft Pointer a TFT_eSPI objektumra.
      * @param w A párbeszédpanel szélessége.
@@ -48,58 +110,43 @@ protected:
     MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount)
         : PopupBase(pTft, w, h, title, message), buttons(buttons), buttonCount(buttonCount) {
 
-        uint16_t maxRowWidth = w - 20; // Max szélesség, kis margóval
-        uint16_t buttonHeight = DIALOG_DEFAULT_BUTTON_HEIGHT;
-        uint8_t buttonsPerRow = 1;
-        uint16_t totalWidth = 0;
+        // Elrendezzük a gombokat, ha vannak
+        placeButtons();
+    }
 
-        // Kiszámoljuk, hogy hány gomb fér el egy sorban
-        for (uint8_t i = 0; i < buttonCount; i++) {
-            totalWidth += buttons[i]->getWidth() + DIALOG_DEFAULT_BUTTONS_GAP;
-            if (totalWidth - DIALOG_DEFAULT_BUTTONS_GAP > maxRowWidth) {
-                break; // Ha túlcsordul, az előző szám volt a max
-            }
-            buttonsPerRow++;
-        }
-        buttonsPerRow--; // Az utolsó túlcsordulás miatt csökkentjük
-
-        // Kiszámoljuk a sorok számát
-        uint8_t rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
-        uint16_t totalHeight = rowCount * buttonHeight + (rowCount - 1) * DIALOG_DEFAULT_BUTTONS_GAP;
-
-        // Button kezdő y pozíció
-        uint16_t startY = contentY;
-
-        // Gombok pozicionálása több sorban
-        uint8_t row = 0, col = 0;
-        uint16_t startX = 0;
-        for (uint8_t i = 0; i < buttonCount; i++) {
-            // Sor elején újraszámoljuk a kezdő X-et (középre igazítás)
-            if (col == 0) {
-                uint16_t rowWidth = 0;
-                uint8_t itemsInRow = min(buttonsPerRow, buttonCount - i);
-                for (uint8_t j = 0; j < itemsInRow; j++) {
-                    rowWidth += buttons[i + j]->getWidth();
-                }
-                rowWidth += (itemsInRow - 1) * DIALOG_DEFAULT_BUTTONS_GAP;
-                startX = x + (w - rowWidth) / 2;
-            }
-
-            // Gomb elhelyezése
-            buttons[i]->setPosition(startX, startY);
-            startX += buttons[i]->getWidth() + DIALOG_DEFAULT_BUTTONS_GAP;
-            col++;
-
-            // Ha betelt egy sor, új sorba lépünk
-            if (col >= buttonsPerRow) {
-                col = 0;
-                row++;
-                startY += buttonHeight + DIALOG_DEFAULT_BUTTONS_GAP;
-            }
+    /**
+     * @brief A gombok elhelyezésének fő metódusa.
+     */
+    virtual void placeButtons() {
+        if (!buttons || buttonCount == 0) {
+            return;
         }
 
-        // Megjelenítjük a dialógust
-        drawDialog();
+        uint16_t maxRowWidth = w - 20;
+        uint8_t buttonsPerRow, rowCount;
+        calculateButtonLayout(maxRowWidth, buttonsPerRow, rowCount);
+        positionButtons(buttonsPerRow, rowCount);
+    }
+
+    /**
+     * @brief Ellenőrzi és kezeli az "X" gomb érintését.
+     *
+     * @param touched Történt-e érintési esemény
+     * @param tx Az érintési esemény X koordinátája
+     * @param ty Az érintési esemény Y koordinátája
+     * @return true ha az "X" gombot érintették, különben false
+     */
+    virtual bool handleCloseButtonTouch(bool touched, uint16_t tx, uint16_t ty) {
+        if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
+
+            // Megszerezzük az első gombtól a callback függvényt, és meghívjuk az "X" gombfelirattal
+            ButtonCallback_t callback = (buttonCount > 0) ? buttons[0]->getCallback() : nullptr;
+            if (callback) {
+                callback(PopupBase::DIALOG_CLOSE_BUTTON_ID, PopupBase::DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
+                return true;
+            }
+        }
+        return false;
     }
 
 public:
@@ -111,30 +158,41 @@ public:
         for (uint8_t i = 0; i < buttonCount; i++) {
             delete buttons[i];
         }
-        delete buttons;
+        delete[] buttons;
+    }
+
+    /**
+     * @brief A dialóg kirajzolása a TFT képernyőn.
+     *
+     * Ez a metódus beállítja a szöveg színét, szöveg helyzetét, és megrajzolja az üzenetet és a gombokat a képernyőn.
+     */
+    virtual void drawDialog() override {
+
+        // Ha már látszik, nem rajzoljuk ki újra
+        if (visible) {
+            return;
+        }
+
+        // Kirajzoljuk a dialógot
+        PopupBase::drawDialog();
+
+        // Gombok kirajzolása, ha vannak
+        if (buttons) {
+            for (uint8_t i = 0; i < buttonCount; i++) {
+                buttons[i]->draw();
+            }
+        }
     }
 
     /// @brief Dialóg gombok touch eseményeinek kezelése
     /// @param touched Jelzi, hogy történt-e érintési esemény.
     /// @param tx Az érintési esemény x-koordinátája.
     /// @param ty Az érintési esemény y-koordinátája.
-    void handleTouch(bool touched, uint16_t tx, uint16_t ty) override {
+    virtual void handleTouch(bool touched, uint16_t tx, uint16_t ty) override {
 
         // Először meghívjuk a PopupBase érintéskezelőjét az 'X' detektálásához
-        if (PopupBase::checkCloseButtonTouch(touched, tx, ty)) {
-
-            // Megszerezzük valamelyik gombtól a callback függvényt, és meghívjuk az "X" gombfelirattal
-            ButtonCallback_t callback = nullptr;
-
-            // Végigmegyünk az összes gombon és megkeressük az első nem NULL callback függvényt
-            for (uint8_t i = 0; i < buttonCount; i++) {
-                callback = buttons[i]->getCallback();
-                if (callback) {
-                    // Megszereztük a callback függvényt, jól meghívjuk az "X" id-jével és a feliratával
-                    callback(PopupBase::DIALOG_CLOSE_BUTTON_ID, PopupBase::DIALOG_CLOSE_BUTTON_LABEL, ButtonState::PUSHED);
-                    return;
-                }
-            }
+        if (handleCloseButtonTouch(touched, tx, ty)) {
+            return;
         }
 
         // Végigmegyünk az összes gombon és meghívjuk a touch kezeléseiket

@@ -91,7 +91,7 @@ void setup() {
     tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
-    debugWaitForSerial(&tft);
+    //    debugWaitForSerial(&tft);
 
     // Ha a bekapcsolás alatt nyomva tartjuk a rotary gombját, akkor töröljük a konfigot
     if (digitalRead(PIN_ENCODER_SW) == LOW) {
@@ -159,13 +159,13 @@ void setup() {
     // Képernyő kirajzolása az aktuálismódban
     pDisplay->drawScreen();
 
-#ifdef __DEBUG
-    // Memória információk megjelenítése a Serial-on DEBUG módban
-    debugMemoryInfo();
-    memoryInfoTicker.attach(MEMORY_INFO_TICKER_INTERVAL_SECONDS, []() {
-        debugMemoryInfo();
-    });
-#endif
+    // #ifdef __DEBUG
+    //     // Memória információk megjelenítése a Serial-on DEBUG módban
+    //     debugMemoryInfo();
+    //     memoryInfoTicker.attach(MEMORY_INFO_TICKER_INTERVAL_SECONDS, []() {
+    //         debugMemoryInfo();
+    //     });
+    // #endif
 }
 
 /**

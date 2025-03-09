@@ -24,7 +24,7 @@ typedef enum ButtonType_t {
 typedef std::function<void(const uint8_t id, const char *, ButtonState_t)> ButtonCallback_t;
 
 // Makró egy osztály callback referenciájának átadására
-#define SCREEN_BUTTON_CALLBACK(ClassName, MethodName, instance) std::bind(&ClassName::MethodName, instance, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+#define SCRN_BTN_CB(ClassName, MethodName, instance) std::bind(&ClassName::MethodName, instance, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
 class TftButton {
 

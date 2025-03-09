@@ -12,13 +12,13 @@
 // Képernyő gomb méret és pozíció definíciók
 #define SCREEN_BTNS_X_START 5    // Gombok kezdő X koordinátája
 #define SCREEN_BTNS_Y_START 250  // Gombok kezdő Y koordinátája
-#define SCREEN_BTN_H 30          // Gombok magassága
-#define SCREEN_BTN_W 70          // Gombok szélessége
+#define SCRN_BTN_H 30            // Gombok magassága
+#define SCRN_BTN_W 70            // Gombok szélessége
 #define SCREEN_BTNS_GAP 10       // Gombok közötti gap
 #define SCREEN_BUTTONS_PER_ROW 6 // Egy sorban hány gomb van
 #define SCREEN_BTN_ROW_SPACING 5 // Gombok sorai közötti távolság
 
-#define SCREEN_BTNS_X(n) (SCREEN_BTNS_X_START + (SCREEN_BTN_W + SCREEN_BTNS_GAP) * n)
+#define SCREEN_BTNS_X(n) (SCREEN_BTNS_X_START + (SCRN_BTN_W + SCREEN_BTNS_GAP) * n)
 
 #define SCREEN_COMPS_REFRESH_TIME_MSEC 500 // Változó adatok frissítési ciklusideje
 
@@ -134,8 +134,8 @@ protected:
      * Ha nem férnek el egy sorban a gombok, akkor nyit egy új sort
      */
     uint16_t getAutoX(uint8_t index) {
-        uint8_t buttonsPerRow = screenWidth / (SCREEN_BTN_W + SCREEN_BTNS_GAP);
-        return SCREEN_BTNS_X_START + ((SCREEN_BTN_W + SCREEN_BTNS_GAP) * (index % buttonsPerRow));
+        uint8_t buttonsPerRow = screenWidth / (SCRN_BTN_W + SCREEN_BTNS_GAP);
+        return SCREEN_BTNS_X_START + ((SCRN_BTN_W + SCREEN_BTNS_GAP) * (index % buttonsPerRow));
     }
 
     /**
@@ -147,13 +147,13 @@ protected:
 
         // Teljes gombterület kiszámítása
         uint8_t totalRows = (screenButtonsCount + SCREEN_BUTTONS_PER_ROW - 1) / SCREEN_BUTTONS_PER_ROW;
-        uint16_t totalHeight = totalRows * SCREEN_BTN_H + (totalRows - 1) * SCREEN_BTN_ROW_SPACING;
+        uint16_t totalHeight = totalRows * SCRN_BTN_H + (totalRows - 1) * SCREEN_BTN_ROW_SPACING;
 
         // Első sor pozíciója, hogy az utolsó sor alja a kijelző aljára essen
         uint16_t firstRowY = screenHeight - totalHeight;
 
         // Az adott sor Y koordinátája
-        return firstRowY + row * (SCREEN_BTN_H + SCREEN_BTN_ROW_SPACING);
+        return firstRowY + row * (SCRN_BTN_H + SCREEN_BTN_ROW_SPACING);
     }
 };
 
