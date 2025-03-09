@@ -30,22 +30,29 @@ struct MemoryStatus_t {
 /**
  * A memóriahasználat mérésének tárolása
  */
-struct MemoryMonitor {
+struct HeapMemoryMonitor {
     uint32_t measurements[MEASUREMENTS_COUNT]; // A memóriahasználatot tároló tömb
     uint8_t index;                             // Az aktuális mérési index
 
-    MemoryMonitor() : index(0) {
+    // A mérések száma (csak érvényes méréseket számol)
+    uint8_t validMeasurements;
+
+    HeapMemoryMonitor() : index(0), validMeasurements(0) {
         // Kezdeti értékek beállítása 0-ra
         for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
             measurements[i] = 0;
         }
     }
 
+    // Adott heap használat mérésének hozzáadása
     void addMeasurement(uint32_t usedHeap) {
-        // Ha már van legalább egy mérés, az elsőt eldobjuk, majd hozzáadjuk az új mérést
-        if (index > 0) {
+        if (usedHeap > 0) {
             measurements[index] = usedHeap;
+            validMeasurements = (validMeasurements < MEASUREMENTS_COUNT) ? validMeasurements + 1 : MEASUREMENTS_COUNT; // Valid mérések száma
+        } else {
+            measurements[index] = 0; // Ha a mérés nulla, akkor ne számoljuk
         }
+
         // Ha az index elérte a maximális értéket, az első elem is eldobásra kerül
         index = (index + 1) % MEASUREMENTS_COUNT; // Körkörös indexelés
     }
@@ -53,32 +60,39 @@ struct MemoryMonitor {
     // Kiszámítja az átlagos memóriahasználatot
     float getAverageUsedHeap() {
         uint32_t total = 0;
-        uint8_t count = 0;
-
-        // Az első mérést kihagyjuk
-        for (uint8_t i = 1; i < MEASUREMENTS_COUNT; i++) {
-            total += measurements[i];
-            count++;
-        }
-
-        return count > 0 ? total / (float)count : 0;
-    }
-
-    // Kiszámítja a legnagyobb növekedést (lehet memóriaszivárgás indikátor)
-    float getMaxIncrease() {
-        float maxIncrease = 0.0;
-        for (uint8_t i = 1; i < MEASUREMENTS_COUNT; i++) {
-            float increase = measurements[i] - measurements[i - 1];
-            if (increase > maxIncrease) {
-                maxIncrease = increase;
+        uint8_t validCount = 0; // Az érvényes mérések száma
+        for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
+            if (measurements[i] > 0) { // Csak a nem nulla mérések
+                total += measurements[i];
+                validCount++;
             }
         }
+        return validCount > 0 ? total / (float)validCount : 0;
+    }
+
+    // Kiszámítja a legnagyobb növekedést
+    float getMaxIncrease() {
+        float maxIncrease = 0.0;
+
+        // Legalább 2 valid mérés szükséges
+        if (validMeasurements > 1) {
+            for (uint8_t i = 1; i < MEASUREMENTS_COUNT; i++) {
+                // Csak akkor számoljuk, ha az előző mérés valid
+                if (measurements[i - 1] > 0 && measurements[i] > 0) {
+                    float increase = measurements[i] - measurements[i - 1];
+                    if (increase > maxIncrease) {
+                        maxIncrease = increase;
+                    }
+                }
+            }
+        }
+
         return maxIncrease;
     }
 };
 
 // Globális memóriafigyelő objektum, csak DEBUG módban
-MemoryMonitor memoryMonitor;
+HeapMemoryMonitor heapMemoryMonitor;
 #endif
 
 /**
@@ -105,7 +119,7 @@ MemoryStatus_t getMemoryStatus() {
 
 #ifdef __DEBUG
     // Mérési adat hozzáadása
-    memoryMonitor.addMeasurement(status.usedHeap);
+    heapMemoryMonitor.addMeasurement(status.usedHeap);
 #endif
 
     return status;
@@ -118,41 +132,42 @@ MemoryStatus_t getMemoryStatus() {
 void debugMemoryInfo() {
     MemoryStatus_t status = getMemoryStatus(); // Adatok lekérése
 
-    DEBUG("===== Memória állapot =====\n");
+    DEBUG("===== Memory info =====\n");
 
     // Program memória (flash)
-    DEBUG("Flash\n");
-    DEBUG("Total: %d B (%.2f kB)\n", FULL_FLASH_SIZE, FULL_FLASH_SIZE / 1024.0);
-    DEBUG("Used: %d B (%.2f kB) - %.2f%%\n", status.programSize, status.programSize / 1024.0, status.programPercent);
-    DEBUG("Free: %d B (%.2f kB) - %.2f%%\n", status.freeFlash, status.freeFlash / 1024.0, status.freeFlashPercent);
-
-    DEBUG("-- \n");
-
-    // Heap memória (RAM)
-    DEBUG("Heap\n");
-    DEBUG("Total: %d B (%.2f kB)\n", status.heapSize, status.heapSize / 1024.0);
-    DEBUG("Used: %d B (%.2f kB) - %.2f%%\n", status.usedHeap, status.usedHeap / 1024.0, status.usedHeapPercent);
-    DEBUG("Free: %d B (%.2f kB) - %.2f%%\n", status.freeHeap, status.freeHeap / 1024.0, status.freeHeapPercent);
+    DEBUG("Flash\t\t\t\t\t\tHeap\n");
+    DEBUG("Total: %d B (%.2f kB)\t\t\t%d B (%.2f kB)\n",
+          FULL_FLASH_SIZE, FULL_FLASH_SIZE / 1024.0, // Flash
+          status.heapSize, status.heapSize / 1024.0  // Heap
+    );
+    DEBUG("Used: %d B (%.2f kB) - %.2f%%\t\t%d B (%.2f kB) - %.2f%%\n",
+          status.programSize, status.programSize / 1024.0, status.programPercent, // Flash
+          status.usedHeap, status.usedHeap / 1024.0, status.usedHeapPercent       // Heap
+    );
+    DEBUG("Free: %d B (%.2f kB) - %.2f%%\t\t%d B (%.2f kB) - %.2f%%\n",
+          status.freeFlash, status.freeFlash / 1024.0, status.freeFlashPercent, // Flash
+          status.freeHeap, status.freeHeap / 1024.0, status.freeHeapPercent     // Heap
+    );
 
     // Memória szivárgás ellenőrzése
-    float averageUsedHeap = memoryMonitor.getAverageUsedHeap();
-    float maxIncrease = memoryMonitor.getMaxIncrease();
+    float averageUsedHeap = heapMemoryMonitor.getAverageUsedHeap();
+    float maxIncrease = heapMemoryMonitor.getMaxIncrease();
 
     // Használt mérések számának lekérése
     uint8_t usedMeasurements = 0;
     for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
-        if (memoryMonitor.measurements[i] > 0) {
+        if (heapMemoryMonitor.measurements[i] > 0) {
             usedMeasurements++;
         }
     }
 
-    DEBUG("-- \n");
-    DEBUG("Átlagos memóriahasználat: %.2f kB\n", averageUsedHeap / 1024.0);
-    DEBUG("Legnagyobb növekedés az utolsó 20 mérés alapján: %.2f kB\n", maxIncrease / 1024.0);
-    DEBUG("Legnagyobb növekedés az utolsó %d mérés (a max %d-ból) alapján: %.2f kB\n", usedMeasurements, MEASUREMENTS_COUNT, maxIncrease / 1024.0);
+    DEBUG("Heap usage:\n  Ave: %.2f kB, max grow: %.2f kB (%d/%d)\n",
+          averageUsedHeap / 1024.0,                                  // average
+          maxIncrease / 1024.0, usedMeasurements, MEASUREMENTS_COUNT // max grow
+    );
 
     if (maxIncrease > 1024) { // Ha a növekedés nagyobb mint 1 kB, akkor figyelmeztetünk
-        DEBUG("Figyelem! Lehetséges memóriaszivárgás!\n");
+        DEBUG("Warning! Possible memory leak!\n");
     }
 
     DEBUG("===========================\n");
