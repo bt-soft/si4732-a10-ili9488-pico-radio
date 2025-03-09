@@ -13,6 +13,7 @@ typedef enum ButtonState_t {
     PUSHED, // Csak az esemény jelzésére a calbback függvénynek, nincs színhez kötve az állapota
     UNKNOWN // ismeretlen
 } ButtonState;
+static constexpr const char *buttonStateNames[] = {"Off", "On", "Disabled", "Hold", "Pushed"};
 
 typedef enum ButtonType_t {
     TOGGLE,
@@ -85,10 +86,6 @@ private:
         uint8_t r = (color & 0xF800) >> 11;
         uint8_t g = (color & 0x07E0) >> 5;
         uint8_t b = (color & 0x001F);
-
-        // r = max(0, r - (amount >> 3)); // 5 bites piros csökkentés
-        // g = max(0, g - (amount >> 2)); // 6 bites zöld csökkentés
-        // b = max(0, b - (amount >> 3)); // 5 bites kék csökkentés
 
         // A max() hívásnál implicit konverzió történik uint8_t → int, ami elkerülhető így
         r = (r > (amount >> 3)) ? r - (amount >> 3) : 0;
@@ -243,8 +240,7 @@ public:
      * Button állapot -> String konverzió
      */
     static const __FlashStringHelper *decodeState(ButtonState_t _state) {
-        static constexpr const char *stateNames[] = {"Off", "On", "Disabled", "Hold", "Pushed"};
-        return (_state <= PUSHED) ? F(stateNames[_state]) : F("Unknown!!");
+        return (_state <= PUSHED) ? F(buttonStateNames[_state]) : F("Unknown!!");
     }
 };
 

@@ -8,7 +8,6 @@
 //------------------ TFT
 #include <TFT_eSPI.h> // TFT_eSPI könyvtár
 TFT_eSPI tft;         // TFT objektum
-// TFT_eSprite spr = TFT_eSprite(&tft); // Sprite objektum
 #include "ESP_free_fonts.h"
 
 #include "FmDisplay.h"

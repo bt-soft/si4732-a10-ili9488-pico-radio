@@ -111,6 +111,7 @@ public:
         for (uint8_t i = 0; i < buttonCount; i++) {
             delete buttons[i];
         }
+        delete buttons;
     }
 
     /// @brief Dialóg gombok touch eseményeinek kezelése

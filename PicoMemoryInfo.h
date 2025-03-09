@@ -70,7 +70,7 @@ void debugMemoryInfo() {
     // Program memória (flash)
     DEBUG("Program mérete: %d B (%.2f kB) - %.2f%%\n", status.programSize, status.programSize / 1024.0, status.programPercent);
     DEBUG("Szabad flash memória: %d B (%.2f kB) - %.2f%%\n", status.freeFlash, status.freeFlash / 1024.0, status.freeFlashPercent);
-
+    DEBUG("-- \n");
     // Heap memória (RAM)
     DEBUG("Teljes heap méret: %d B (%.2f kB)\n", status.heapSize, status.heapSize / 1024.0);
     DEBUG("Felhasznált heap: %d B (%.2f kB) - %.2f%%\n", status.usedHeap, status.usedHeap / 1024.0, status.usedHeapPercent);
