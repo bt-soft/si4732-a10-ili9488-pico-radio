@@ -9,10 +9,9 @@
 
 /**
  * @class MultiButtonDialog
+ *
  * @brief Több gombos párbeszédpanel TFT képernyőn.
  *
- * Ez az osztály egy olyan párbeszédpanelt képvisel, amely üzenetet és több gombot jelenít meg egy TFT képernyőn.
- * A PopupBase osztályból származik.
  */
 class MultiButtonDialog : public PopupBase {
 
