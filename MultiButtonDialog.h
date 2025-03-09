@@ -82,7 +82,7 @@ protected:
     ButtonCallback_t buttonCallback; // Gombok callback-ja
 
     /**
-     *
+     * Gombok legyártása a feliratok alapján
      */
     void buildButtonArray(const char *buttonLabels[], uint8_t buttonCount, ButtonCallback_t btnCb) {
 
