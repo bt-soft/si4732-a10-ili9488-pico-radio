@@ -80,38 +80,30 @@ private:
     }
 
 protected:
-    TftButton **buttons; // A megjelenítendő gombok mutatóinak tömbje.
-    uint8_t buttonCount; // A párbeszédpanelen lévő gombok száma.
+    TftButton **buttons;             // A megjelenítendő gombok mutatóinak tömbje.
+    uint8_t buttonCount;             // A párbeszédpanelen lévő gombok száma.
+    ButtonCallback_t buttonCallback; // Gombok callback-ja
 
     /**
-     * Konstruktor gombok és üzenet nélkül,
-     * A gombokat majd a leszármazott adja hozzá
      *
-     * @param pTft Pointer a TFT_eSPI objektumra.
-     * @param w A párbeszédpanel szélessége.
-     * @param h A párbeszédpanel magassága.
-     * @param title A dialógus címe (opcionális).
-     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
      */
-    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title)
-        : PopupBase(pTft, w, h, title, nullptr), buttons(nullptr), buttonCount(0) {}
+    void buildButtonArray(const char *buttonLabels[], uint8_t buttonCount, ButtonCallback_t btnCb) {
 
-    /**
-     * @brief MultiButtonDialog létrehozása gombokkal
-     *
-     * @param pTft Pointer a TFT_eSPI objektumra.
-     * @param w A párbeszédpanel szélessége.
-     * @param h A párbeszédpanel magassága.
-     * @param title A dialógus címe (opcionális).
-     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
-     * @param buttons A gombok mutatóinak tömbje.
-     * @param buttonCount A gombok száma.
-     */
-    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount)
-        : PopupBase(pTft, w, h, title, message), buttons(buttons), buttonCount(buttonCount) {
+        if (!buttonLabels) {
+            return;
+        }
 
-        // Elrendezzük a gombokat, ha vannak
-        placeButtons();
+        this->buttonCount = buttonCount;
+        this->buttonCallback = btnCb;
+        buttons = new TftButton *[buttonCount];
+
+        // Kezdő multiButton ID érték
+        uint8_t id = PopupBase::DLG_MULTI_BTN_ID_START;
+
+        // Button array feltöltése a gombokkal
+        for (uint8_t i = 0; i < buttonCount; i++) {
+            buttons[i] = new TftButton(id++, pTft, MULTI_BTN_W, MULTI_BTN_H, buttonLabels[i], ButtonType::PUSHABLE, buttonCallback);
+        }
     }
 
     /**
@@ -150,6 +142,25 @@ protected:
     }
 
 public:
+    /**
+     * @brief MultiButtonDialog létrehozása gombokkal, üzenet nélkül
+     *
+     * @param pTft Pointer a TFT_eSPI objektumra.
+     * @param w A párbeszédpanel szélessége.
+     * @param h A párbeszédpanel magassága.
+     * @param title A dialógus címe (opcionális).
+     * @param buttons A gombok mutatóinak tömbje.
+     */
+    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const char *buttonLabels[] = nullptr, uint8_t buttonCount = 0, ButtonCallback_t buttonCallback = nullptr)
+        : PopupBase(pTft, w, h, title) {
+
+        // Legyártjuk a gombok tömbjét
+        buildButtonArray(buttonLabels, buttonCount, buttonCallback);
+
+        // Elrendezzük a gombokat, ha vannak
+        placeButtons();
+    }
+
     /**
      * Dialóg destruktor
      * Töröljük a gombokat
@@ -199,37 +210,6 @@ public:
         for (uint8_t i = 0; i < buttonCount; i++) {
             buttons[i]->handleTouch(touched, tx, ty);
         }
-    }
-
-    /**
-     * @brief MultiButtonDialog objektum létrehozása.
-     *
-     * @param dialogPointer Az új dialóg pointere
-     * @param pTft Pointer a TFT_eSPI objektumra.
-     * @param w A párbeszédpanel szélessége.
-     * @param h A párbeszédpanel magassága.
-     * @param title A dialógus címe (opcionális).
-     * @param message Az üzenet, amely megjelenik a párbeszédpanelen.
-     * @param buttons A gombok mutatóinak tömbje.
-     * @param buttonCount A gombok száma.
-     */
-    static MultiButtonDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, TftButton **buttons, uint8_t buttonCount) {
-        return new MultiButtonDialog(pTft, w, h, title, message, buttons, buttonCount);
-    }
-
-    /**
-     * @brief Üzenet nélküli MultiButtonDialog objektum létrehozása.
-     *
-     * @param dialogPointer Az új dialóg pointere
-     * @param pTft Pointer a TFT_eSPI objektumra.
-     * @param w A párbeszédpanel szélessége.
-     * @param h A párbeszédpanel magassága.
-     * @param title A dialógus címe (opcionális).
-     * @param buttons A gombok mutatóinak tömbje.
-     * @param buttonCount A gombok száma.
-     */
-    static MultiButtonDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, TftButton **buttons, uint8_t buttonCount) {
-        return new MultiButtonDialog(pTft, w, h, title, nullptr, buttons, buttonCount);
     }
 };
 

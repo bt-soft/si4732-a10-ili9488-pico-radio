@@ -46,7 +46,7 @@ protected:
      * @param h A dialógus magassága.
      * @param title A dialógus címe (opcionális).
      */
-    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message)
+    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message = nullptr)
         : pTft(tft), w(w), h(h), title(title), message(message), visible(false) {
 
         // Dialóg bal felső sarkának kiszámítása a képernyő középre igzaításához

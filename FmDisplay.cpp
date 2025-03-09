@@ -138,16 +138,7 @@ void FmDisplay::handleScreenButtonPress() {
             "Retry-7", "Retry-8", "Retry-9", "Retry-10", "Retry-11", "Retry-12", "Retry-13", "Retry-14", "Retry-15"};
         uint8_t buttonsCount = ARRAY_ITEM_COUNT(buttonLabels);
 
-        // Kezdő multiButton ID érték
-        uint8_t id = PopupBase::DLG_MULTI_BTN_ID_START;
-
-        // Button array
-        TftButton **multiButtons = new TftButton *[buttonsCount];
-        for (uint8_t i = 0; i < buttonsCount; i++) {
-            multiButtons[i] = new TftButton(id++, &tft, MULTI_BTN_W, MULTI_BTN_H, buttonLabels[i], ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-        }
-
-        dialog = MultiButtonDialog::createDialog(&tft, 400, 260, F("Valasszon opciot!"), multiButtons, buttonsCount);
+        dialog = new MultiButtonDialog(&tft, 400, 260, F("Valasszon opciot!"), buttonLabels, buttonsCount, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
         dialog->drawDialog();
 
     } else if (strcmp("Input", lastButton.label) == 0) {
