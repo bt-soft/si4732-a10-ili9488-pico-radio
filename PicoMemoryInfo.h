@@ -170,7 +170,7 @@ void debugMemoryInfo() {
         DEBUG("Warning! Possible memory leak!\n");
     }
 
-    DEBUG("===========================\n");
+    DEBUG("---\n");
 }
 #endif
 
