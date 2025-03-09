@@ -99,7 +99,7 @@ protected:
 
         // Button array feltöltése a gombokkal
         for (uint8_t i = 0; i < buttonCount; i++) {
-            buttons[i] = new TftButton(id++, pTft, MULTI_BTN_W, MULTI_BTN_H, buttonLabels[i], ButtonType::PUSHABLE, buttonCallback);
+            buttons[i] = new TftButton(id++, tft, MULTI_BTN_W, MULTI_BTN_H, buttonLabels[i], ButtonType::PUSHABLE, buttonCallback);
         }
     }
 
@@ -142,14 +142,14 @@ public:
     /**
      * @brief MultiButtonDialog létrehozása gombokkal, üzenet nélkül
      *
-     * @param pTft Pointer a TFT_eSPI objektumra.
+     * @param pTft Az TFT_eSPI objektumra mutató referencia.
      * @param w A párbeszédpanel szélessége.
      * @param h A párbeszédpanel magassága.
      * @param title A dialógus címe (opcionális).
      * @param buttons A gombok mutatóinak tömbje.
      */
-    MultiButtonDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const char *buttonLabels[] = nullptr, uint8_t buttonCount = 0, ButtonCallback_t buttonCallback = nullptr)
-        : PopupBase(pTft, w, h, title) {
+    MultiButtonDialog(TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const char *buttonLabels[] = nullptr, uint8_t buttonCount = 0, ButtonCallback_t buttonCallback = nullptr)
+        : PopupBase(tft, w, h, title) {
 
         // Legyártjuk a gombok tömbjét
         buildButtonArray(buttonLabels, buttonCount, buttonCallback);

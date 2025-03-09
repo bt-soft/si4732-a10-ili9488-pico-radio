@@ -17,19 +17,19 @@ FmDisplay::FmDisplay(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config, 
     uint8_t id = PopupBase::DLG_MULTI_BTN_ID_START;  // Kezdő multiButton ID érték
     screenButtons = new TftButton[FM_SCRN_BTNS_CNT]; // Lefoglaljuk a gombok tömbjét
 
-    screenButtons[0] = TftButton(id++, &tft, getAutoX(0), getAutoY(0, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Popup"), ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[1] = TftButton(id++, &tft, getAutoX(1), getAutoY(1, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Multi"), ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[2] = TftButton(id++, &tft, getAutoX(2), getAutoY(2, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Input"), ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[3] = TftButton(id++, &tft, getAutoX(3), getAutoY(3, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Sw-2"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[4] = TftButton(id++, &tft, getAutoX(4), getAutoY(4, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Dis"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[5] = TftButton(id++, &tft, getAutoX(5), getAutoY(5, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-5"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[0] = TftButton(id++, tft, getAutoX(0), getAutoY(0, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Popup", ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[1] = TftButton(id++, tft, getAutoX(1), getAutoY(1, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Multi", ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[2] = TftButton(id++, tft, getAutoX(2), getAutoY(2, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Input", ButtonType::PUSHABLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[3] = TftButton(id++, tft, getAutoX(3), getAutoY(3, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Sw-2", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[4] = TftButton(id++, tft, getAutoX(4), getAutoY(4, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Dis", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[5] = TftButton(id++, tft, getAutoX(5), getAutoY(5, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-5", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
 
-    screenButtons[6] = TftButton(id++, &tft, getAutoX(6), getAutoY(6, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-6"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[7] = TftButton(id++, &tft, getAutoX(7), getAutoY(7, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-7"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[8] = TftButton(id++, &tft, getAutoX(8), getAutoY(8, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-8"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[9] = TftButton(id++, &tft, getAutoX(9), getAutoY(9, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-9"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[10] = TftButton(id++, &tft, getAutoX(10), getAutoY(10, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-10"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
-    screenButtons[11] = TftButton(id++, &tft, getAutoX(11), getAutoY(11, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, F("Btn-11"), ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[6] = TftButton(id++, tft, getAutoX(6), getAutoY(6, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-6", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[7] = TftButton(id++, tft, getAutoX(7), getAutoY(7, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-7", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[8] = TftButton(id++, tft, getAutoX(8), getAutoY(8, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-8", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[9] = TftButton(id++, tft, getAutoX(9), getAutoY(9, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-9", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[10] = TftButton(id++, tft, getAutoX(10), getAutoY(10, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-10", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+    screenButtons[11] = TftButton(id++, tft, getAutoX(11), getAutoY(11, FM_SCRN_BTNS_CNT), SCRN_BTN_W, SCRN_BTN_H, "Btn-11", ButtonType::TOGGLE, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
 
     // SMeter példányosítása
     pSMeter = new SMeter(tft, 0, 80);
@@ -128,7 +128,7 @@ void FmDisplay::buttonCallback(const uint8_t id, const char *label, ButtonState_
 void FmDisplay::handleScreenButtonPress() {
 
     if (strcmp("Popup", lastButton.label) == 0) {
-        dialog = PopUpDialog::createDialog(&tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCRN_BTN_CB(FmDisplay, buttonCallback, this), "Igen", "Lehet megse kellene");
+        dialog = PopUpDialog::createDialog(tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCRN_BTN_CB(FmDisplay, buttonCallback, this), "Igen", "Lehet megse kellene");
         dialog->drawDialog();
 
     } else if (strcmp("Multi", lastButton.label) == 0) {
@@ -138,12 +138,12 @@ void FmDisplay::handleScreenButtonPress() {
             "Retry-7", "Retry-8", "Retry-9", "Retry-10", "Retry-11", "Retry-12", "Retry-13", "Retry-14", "Retry-15"};
         uint8_t buttonsCount = ARRAY_ITEM_COUNT(buttonLabels);
 
-        dialog = new MultiButtonDialog(&tft, 400, 260, F("Valasszon opciot!"), buttonLabels, buttonsCount, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
+        dialog = new MultiButtonDialog(tft, 400, 260, F("Valasszon opciot!"), buttonLabels, buttonsCount, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
         dialog->drawDialog();
 
     } else if (strcmp("Input", lastButton.label) == 0) {
 
-        dialog = new InputDialog(&tft, 400, 260, F("Frequency"));
+        dialog = new InputDialog(tft, 400, 260, F("Frequency"));
         dialog->drawDialog();
 
     } else {

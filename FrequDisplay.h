@@ -8,7 +8,7 @@
 class FreqDisplay {
 
 private:
-    TFT_eSPI tft;
+    TFT_eSPI &tft;
     TFT_eSprite spr;
     Band &band;
     Config &config;

@@ -14,10 +14,10 @@ private:
     }
 
 public:
-    InputDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title)
-        : MultiButtonDialog(pTft, w, h, title) {
+    InputDialog(TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *title)
+        : MultiButtonDialog(tft, w, h, title) {
 
-        inputField = new InputTextField(pTft, x - 5, contentY + 5, w - 5, 20);
+        inputField = new InputTextField(tft, x - 5, contentY + 5, w - 5, 20);
 
         // // Beállítjuk az ősnek a gombok számát
         buttonCount = 2;

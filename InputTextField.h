@@ -5,13 +5,13 @@
 
 class InputTextField {
 private:
-    TFT_eSPI *pTft;
+    TFT_eSPI &tft;
     uint16_t x, y, w, h;
     String text;
 
 public:
-    InputTextField(TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
-        : pTft(pTft), x(x), y(y), w(w), h(h) {
+    InputTextField(TFT_eSPI &tft, uint16_t x, uint16_t y, uint16_t w, uint16_t h)
+        : tft(tft), x(x), y(y), w(w), h(h) {
         text = "";
     }
 
@@ -37,10 +37,10 @@ public:
     }
 
     void draw() {
-        pTft->fillRect(x, y, w, h, TFT_DARKGREY);
-        pTft->setTextColor(TFT_WHITE);
-        pTft->setTextDatum(TL_DATUM);
-        pTft->drawString(text, x, y);
+        tft.fillRect(x, y, w, h, TFT_DARKGREY);
+        tft.setTextColor(TFT_WHITE);
+        tft.setTextDatum(TL_DATUM);
+        tft.drawString(text, x, y);
     }
 };
 #endif

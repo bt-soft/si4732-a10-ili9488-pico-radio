@@ -13,7 +13,9 @@ typedef enum ButtonState_t {
     PUSHED, // Csak az esemény jelzésére a calbback függvénynek, nincs színhez kötve az állapota
     UNKNOWN // ismeretlen
 } ButtonState;
-static constexpr const char *buttonStateNames[] = {"Off", "On", "Disabled", "Hold", "Pushed"};
+
+// Gomb állapot String-ek a FLASH memóriából
+static const __FlashStringHelper *BUTTON_STATE_NAMES[] = {F("Off"), F("On"), F("Disabled"), F("Hold"), F("Pushed")};
 
 typedef enum ButtonType_t {
     TOGGLE,
@@ -28,12 +30,11 @@ typedef std::function<void(const uint8_t id, const char *, ButtonState_t)> Butto
 
 class TftButton {
 
-public:
 private:
     // Benyomott gomb háttérszín gradienshez, több iterációs lépés -> erősebb hatás
     static constexpr uint8_t DARKEN_COLORS_STEPS = 6;
 
-    TFT_eSPI *pTft;
+    TFT_eSPI *pTft;            // Itt pointert használunk a dinamikus tömbök miatt (nem lehet null referenciát használni)
     uint16_t x, y, w, h;       // pozíciója
     uint8_t id;                // A gomb ID-je
     const char *label;         // A gomb felirata
@@ -97,42 +98,29 @@ private:
 
 public:
     /**
-     * Default konstruktor (pl.: a dinamikus tömb deklarációhoz)
+     * Default konstruktor
+     * (pl.: a dinamikus tömb deklarációhoz)
      */
     TftButton() {}
 
     /**
-     * @brief button konstruktor
-     * @param pTft TFT példány
-     * @param x  x pozíció
-     * @param y y pozíció
-     * @param w szélesség
-     * @param h magasság
-     * @param label felirat
-     * @param type típus (push, toggle)
-     * @param callback callback
-     * @param state aktuális állapot
+     * Konstruktor
      */
-    TftButton(uint8_t id, TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType_t type, ButtonCallback_t callback = nullptr, ButtonState_t state = OFF)
-        : id(id), pTft(pTft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
+    TftButton(uint8_t id, TFT_eSPI &tft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const char *label, ButtonType_t type, ButtonCallback_t callback = nullptr, ButtonState_t state = OFF)
+        : id(id), pTft(&tft), x(x), y(y), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
-    TftButton(uint8_t id, TFT_eSPI *pTft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType_t type, ButtonCallback_t callback = nullptr, ButtonState_t state = OFF)
-        : id(id), pTft(pTft), x(x), y(y), w(w), h(h), label(reinterpret_cast<const char *>(label)), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
+    /**
+     * Konstruktor X/Y pozíció nélkül
+     * Automatikus elrendezéshez csak a szélesség és a magasság van megadva
+     */
+    TftButton(uint8_t id, TFT_eSPI &tft, uint16_t w, uint16_t h, const char *label, ButtonType_t type, ButtonCallback_t callback = NULL, ButtonState_t state = OFF)
+        : id(id), pTft(&tft), x(0), y(0), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
 
-    /// @brief Konstruktor csak a szélesség és a magasság megadásával.
-    ///         A pozíciót kiszámítjuk máshol és beállítjuk a setPosition(uint16_t x, uint16_t y)-al
-    /// @param pTft TFT példány
-    /// @param w szélesség
-    /// @param h magasság
-    /// @param label felirat
-    /// @param type típus (push, toggle)
-    /// @param callback callback
-    /// @param state aktuális állapot
-    TftButton(uint8_t id, TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType_t type, ButtonCallback_t callback = NULL, ButtonState_t state = OFF)
-        : TftButton(id, pTft, w, h, reinterpret_cast<const char *>(label), type, callback, state) {}
-
-    TftButton(uint8_t id, TFT_eSPI *pTft, uint16_t w, uint16_t h, const char *label, ButtonType_t type, ButtonCallback_t callback = NULL, ButtonState_t state = OFF)
-        : id(id), pTft(pTft), x(0), y(0), w(w), h(h), label(label), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
+    // A label F() makróval megadva
+    // TftButton(uint8_t id, TFT_eSPI &tft, uint16_t x, uint16_t y, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType_t type, ButtonCallback_t callback = nullptr, ButtonState_t state = OFF)
+    //     : id(id), pTft(&tft), x(x), y(y), w(w), h(h), label(reinterpret_cast<const char *>(label)), type(type), callback(callback), buttonPressed(false), state(state), oldState(state) {}
+    // TftButton(uint8_t id, TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *label, ButtonType_t type, ButtonCallback_t callback = NULL, ButtonState_t state = OFF)
+    //     : TftButton(id, tft, w, h, reinterpret_cast<const char *>(label), type, callback, state) {}
 
     /// @brief Destruktor
     virtual ~TftButton() {
@@ -240,7 +228,7 @@ public:
      * Button állapot -> String konverzió
      */
     static const __FlashStringHelper *decodeState(ButtonState_t _state) {
-        return (_state <= PUSHED) ? F(buttonStateNames[_state]) : F("Unknown!!");
+        return (_state <= PUSHED) ? BUTTON_STATE_NAMES[_state] : F("Unknown!!");
     }
 };
 

@@ -6,25 +6,6 @@
 
 /**
  * @class PopUpDialog
- * @brief Egy osztály, amely egy felugró párbeszédablakot képvisel OK és opcionális Cancel gombokkal.
- *
- * Ez az osztály a PopupBase-ből származik, és egy felugró párbeszédablak létrehozására és kezelésére szolgál
- * egy TFT kijelzőn. A párbeszédablak üzenetet jeleníthet meg, és rendelkezik OK és opcionális Cancel gombokkal.
- *
- * @details
- * A PopUpDialog osztály lehetőséget biztosít egy üzenetet tartalmazó párbeszédablak megjelenítésére, a gombok érintési eseményeinek kezelésére,
- * és egy visszahívási függvény végrehajtására, amikor az OK gombot megnyomják.
- *
- * @note Az üzenet szövege flash memóriában van tárolva.
- *
- * @param pTft A TFT_eSPI példányra mutató pointer.
- * @param w A párbeszédablak szélessége.
- * @param h A párbeszédablak magassága.
- * @param title A párbeszédablak címe (opcionális).
- * @param message A párbeszédablak üzenete.
- * @param callback Az OK gomb visszahívási függvénye.
- * @param okText Az OK gomb felirata.
- * @param cancelText A Cancel gomb felirata (opcionális).
  */
 class PopUpDialog : public PopupBase {
 private:
@@ -34,7 +15,7 @@ private:
 
 protected:
     /// @brief Párbeszédablak konstruktor
-    /// @param pTft A TFT_eSPI példányra mutató pointer.
+    /// @param pTft A TFT_eSPI példányra mutató referencia.
     /// @param w A párbeszédablak szélessége.
     /// @param h A párbeszédablak magassága.
     /// @param title A párbeszédablak címe (opcionális).
@@ -42,12 +23,12 @@ protected:
     /// @param callback Az OK gomb visszahívási függvénye.
     /// @param okText Az OK gomb felirata.
     /// @param cancelText A Cancel gomb felirata (opcionális).
-    PopUpDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr)
-        : PopupBase(pTft, w, h, title, message), callback(callback), cancelButton(nullptr) {
+    PopUpDialog(TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr)
+        : PopupBase(tft, w, h, title, message), callback(callback), cancelButton(nullptr) {
 
         // Kiszedjük a legnagyobb gomb felirat szélességét (10-10 pixel a szélén)
-        uint8_t okButtonWidth = pTft->textWidth(okText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
-        uint8_t cancelButtonWidth = cancelText ? pTft->textWidth(cancelText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
+        uint8_t okButtonWidth = tft.textWidth(okText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X;                          // OK gomb szöveg szélessége + padding a gomb széleihez
+        uint8_t cancelButtonWidth = cancelText ? tft.textWidth(cancelText) + DIALOG_DEFAULT_BUTTON_TEXT_PADDING_X : 0; // Cancel gomb szöveg szélessége, ha van
 
         // Ha van Cancel gomb, akkor a két gomb közötti gap-et is figyelembe vesszük
         uint16_t totalButtonWidth = cancelButtonWidth > 0 ? okButtonWidth + cancelButtonWidth + DLG_BTN_GAP : okButtonWidth;
@@ -57,12 +38,12 @@ protected:
         uint16_t buttonY = contentY + DLG_BTN_H;
 
         // OK gomb
-        okButton = new TftButton(PopupBase::DIALOG_OK_BUTTON_ID, pTft, okX, buttonY, okButtonWidth, DLG_BTN_H, okText, ButtonType::PUSHABLE, callback);
+        okButton = new TftButton(PopupBase::DIALOG_OK_BUTTON_ID, tft, okX, buttonY, okButtonWidth, DLG_BTN_H, okText, ButtonType::PUSHABLE, callback);
 
         // Cancel gomb, ha van
         if (cancelText) {
             uint16_t cancelX = okX + okButtonWidth + DLG_BTN_GAP; // A Cancel gomb X pozíciója
-            cancelButton = new TftButton(PopupBase::DIALOG_CANCEL_BUTTON_ID, pTft, cancelX, buttonY, cancelButtonWidth, DLG_BTN_H, cancelText, ButtonType::PUSHABLE);
+            cancelButton = new TftButton(PopupBase::DIALOG_CANCEL_BUTTON_ID, tft, cancelX, buttonY, cancelButtonWidth, DLG_BTN_H, cancelText, ButtonType::PUSHABLE);
         }
     }
 
@@ -126,7 +107,7 @@ public:
     /**
      * @brief Létrehoz egy új PopUpDialog példányt.
      *
-     * @param pTft A TFT_eSPI objektumra mutató pointer, amelyet a kijelzőhöz használnak.
+     * @param pTft A TFT_eSPI objektumra mutató referencia
      * @param w A párbeszédablak szélessége.
      * @param h A párbeszédablak magassága.
      * @param title A cím szövegére mutató pointer, amely a flash memóriában van tárolva.
@@ -136,8 +117,8 @@ public:
      * @param cancelText A Cancel gomb szövege (alapértelmezett érték: nullptr).
      * @return PopUpDialog* Pointer az újonnan létrehozott PopUpDialog példányra.
      */
-    static PopUpDialog *createDialog(TFT_eSPI *pTft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr) {
-        return new PopUpDialog(pTft, w, h, title, message, callback, okText, cancelText);
+    static PopUpDialog *createDialog(TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message, ButtonCallback_t callback, const char *okText = "OK", const char *cancelText = nullptr) {
+        return new PopUpDialog(tft, w, h, title, message, callback, okText, cancelText);
     }
 };
 

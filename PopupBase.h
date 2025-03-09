@@ -31,7 +31,7 @@ private:
     uint16_t closeButtonX, closeButtonY; // X gomb pozíciója
 
 protected:
-    TFT_eSPI *pTft;
+    TFT_eSPI &tft;
     uint16_t x, w, h;  // a dialógus koordinátái az y érték nélkül
     uint16_t contentY; // Ezt az y értéket láthatják a leszármazottak
     bool visible;
@@ -46,12 +46,12 @@ protected:
      * @param h A dialógus magassága.
      * @param title A dialógus címe (opcionális).
      */
-    PopupBase(TFT_eSPI *tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message = nullptr)
-        : pTft(tft), w(w), h(h), title(title), message(message), visible(false) {
+    PopupBase(TFT_eSPI &tft, uint16_t w, uint16_t h, const __FlashStringHelper *title, const __FlashStringHelper *message = nullptr)
+        : tft(tft), w(w), h(h), title(title), message(message), visible(false) {
 
         // Dialóg bal felső sarkának kiszámítása a képernyő középre igzaításához
-        x = (tft->width() - w) / 2;
-        y = (tft->height() - h) / 2;
+        x = (tft.width() - w) / 2;
+        y = (tft.height() - h) / 2;
 
         messageY = y + (title ? DLG_HEADER_H + 15 : 5);      // Az üzenet a fejléc utánkezdődjön, ha van fejléc
         contentY = messageY + (message != nullptr ? 15 : 0); // A belső tér az üzenet után kezdődjön, ha van üzenet
@@ -73,37 +73,37 @@ public:
     virtual void drawDialog() {
 
         // Kirajzoljuk a dialógot
-        pTft->fillRect(x, y, w, h, TFT_DARKGREY); // háttér
+        tft.fillRect(x, y, w, h, TFT_DARKGREY); // háttér
 
         // Title kiírása
         if (title != nullptr) {
             // Fejléc háttér kitöltése
-            pTft->fillRect(x, y, w, DLG_HEADER_H, TFT_NAVY);
+            tft.fillRect(x, y, w, DLG_HEADER_H, TFT_NAVY);
 
             // Title kiírása
-            pTft->setTextColor(TFT_WHITE);
-            pTft->setTextDatum(TL_DATUM);                                                     // Bal felső sarokhoz igazítva
-            pTft->drawString(title, x + 10, y + 5 + (DLG_HEADER_H - pTft->fontHeight()) / 2); // Bal oldali margó 10px
+            tft.setTextColor(TFT_WHITE);
+            tft.setTextDatum(TL_DATUM);                                                   // Bal felső sarokhoz igazítva
+            tft.drawString(title, x + 10, y + 5 + (DLG_HEADER_H - tft.fontHeight()) / 2); // Bal oldali margó 10px
 
             // Fejléc vonala
-            pTft->drawFastHLine(x, y + DLG_HEADER_H, w, TFT_WHITE);
+            tft.drawFastHLine(x, y + DLG_HEADER_H, w, TFT_WHITE);
         }
 
         // Dialógus kerete
-        pTft->drawRect(x, y, w, h, TFT_WHITE); // keret
+        tft.drawRect(x, y, w, h, TFT_WHITE); // keret
 
         // A header "X" gomb kirajzolása
         closeButtonX = x + w - DLG_CLOSE_BTN_SIZE - 5; // Az "X" gomb pozíciója a title jobb oldalán, kis margóval a jobb szélre
         closeButtonY = y + 5;                          // Fejléc tetejéhez igazítva
-        pTft->setTextColor(TFT_WHITE);
-        pTft->setTextDatum(MC_DATUM); // Középre igazítva az "X"-et
-        pTft->drawString(F(DIALOG_CLOSE_BUTTON_LABEL), closeButtonX + DLG_CLOSE_BTN_SIZE / 2, closeButtonY + DLG_CLOSE_BTN_SIZE / 2);
+        tft.setTextColor(TFT_WHITE);
+        tft.setTextDatum(MC_DATUM); // Középre igazítva az "X"-et
+        tft.drawString(F(DIALOG_CLOSE_BUTTON_LABEL), closeButtonX + DLG_CLOSE_BTN_SIZE / 2, closeButtonY + DLG_CLOSE_BTN_SIZE / 2);
 
         // Üzenet kirajzolása, ha van üzenet
         if (message != nullptr) {
-            pTft->setTextColor(TFT_WHITE);
-            pTft->setTextDatum(MC_DATUM);
-            pTft->drawString(message, x + w / 2, messageY);
+            tft.setTextColor(TFT_WHITE);
+            tft.setTextDatum(MC_DATUM);
+            tft.drawString(message, x + w / 2, messageY);
         }
     }
 
