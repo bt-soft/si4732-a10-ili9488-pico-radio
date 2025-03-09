@@ -71,6 +71,13 @@ protected:
      */
     virtual void handleLoop() = 0;
 
+    /**
+     * A megadott feliratú gombot nyomták meg?
+     */
+    bool isButton(const char *title) {
+        return lastButton.valid and strcmp(title, lastButton.label) == 0;
+    }
+
 public:
     /**
      *

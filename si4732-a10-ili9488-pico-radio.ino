@@ -159,13 +159,13 @@ void setup() {
     // Képernyő kirajzolása az aktuálismódban
     pDisplay->drawScreen();
 
-    // #ifdef __DEBUG
-    //     // Memória információk megjelenítése a Serial-on DEBUG módban
-    //     debugMemoryInfo();
-    //     memoryInfoTicker.attach(MEMORY_INFO_TICKER_INTERVAL_SECONDS, []() {
-    //         debugMemoryInfo();
-    //     });
-    // #endif
+#ifdef __DEBUG
+    // Memória információk megjelenítése a Serial-on DEBUG módban
+    debugMemoryInfo();
+    memoryInfoTicker.attach(MEMORY_INFO_TICKER_INTERVAL_SECONDS, []() {
+        debugMemoryInfo();
+    });
+#endif
 }
 
 /**

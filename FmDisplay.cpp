@@ -127,11 +127,11 @@ void FmDisplay::buttonCallback(const uint8_t id, const char *label, ButtonState_
  */
 void FmDisplay::handleScreenButtonPress() {
 
-    if (strcmp("Popup", lastButton.label) == 0) {
+    if (isButton("Popup")) {
         dialog = PopUpDialog::createDialog(tft, 300, 150, F("Dialog title"), F("Folytassuk?"), SCRN_BTN_CB(FmDisplay, buttonCallback, this), "Igen", "Lehet megse kellene");
         dialog->drawDialog();
 
-    } else if (strcmp("Multi", lastButton.label) == 0) {
+    } else if (isButton("Multi")) {
 
         const char *buttonLabels[] = {
             "OK", "Cancel", "Retry-1", "Retry-2", "Retry-3", "Retry-4", "Retry-5", "Retry-6",
@@ -141,13 +141,13 @@ void FmDisplay::handleScreenButtonPress() {
         dialog = new MultiButtonDialog(tft, 400, 260, F("Valasszon opciot!"), buttonLabels, buttonsCount, SCRN_BTN_CB(FmDisplay, buttonCallback, this));
         dialog->drawDialog();
 
-    } else if (strcmp("Input", lastButton.label) == 0) {
+    } else if (isButton("Input")) {
 
         dialog = new InputDialog(tft, 400, 260, F("Frequency"));
         dialog->drawDialog();
 
     } else {
-        DEBUG("Screen button Id: %d, Label: '%s', állapot változás: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
+        DEBUG("Le nem kezelt Screen button Id: %d, Label: '%s', állapot változás: %s\n", lastButton.id, lastButton.label, TftButton::decodeState(lastButton.state));
     }
 }
 
