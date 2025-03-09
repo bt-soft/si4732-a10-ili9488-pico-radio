@@ -1,5 +1,7 @@
 #include <Arduino.h>
 
+#include "utils.h"
+
 //------------------- Pins
 #include "pinout.h"
 
@@ -43,6 +45,12 @@ Band band(si4735, config);
 //------------------- Runtime variables
 #include "RuntimeVars.h"
 
+//------------------- Memória információk megjelenítése
+#include "PicoMemoryInfo.h"
+#ifdef __DEBUG
+#define MEMORY_INFO_TICKER_INTERVAL_SECONDS 60 * 1 // 1 perc
+Ticker memoryInfoTicker;
+#endif
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -84,7 +92,7 @@ void setup() {
     tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
-    // debugWaitForSerial(&tft);
+    debugWaitForSerial(&tft);
 
     // Ha a bekapcsolás alatt nyomva tartjuk a rotary gombját, akkor töröljük a konfigot
     if (digitalRead(PIN_ENCODER_SW) == LOW) {
@@ -151,6 +159,14 @@ void setup() {
 
     // Képernyő kirajzolása az aktuálismódban
     pDisplay->drawScreen();
+
+#ifdef __DEBUG
+    // Memória információk megjelenítése a Serial-on DEBUG módban
+    debugMemoryInfo();
+    memoryInfoTicker.attach(MEMORY_INFO_TICKER_INTERVAL_SECONDS, []() {
+        debugMemoryInfo();
+    });
+#endif
 }
 
 /**

@@ -30,7 +30,7 @@ protected:
     Band &band;
     Config &config;
 
-    PopupBase *dialog = nullptr; // Dialógus pointer
+    PopupBase *dialog; // Dialógus pointer
 
     // Lenyomott gomb info
     struct ButtonInfo_t {
@@ -76,7 +76,7 @@ public:
      *
      */
     DisplayBase(TFT_eSPI &tft, SI4735 &si4735, Band &band, Config &config)
-        : tft(tft), si4735(si4735), band(band), config(config), screenWidth(tft.width()), screenHeight(tft.height()) {
+        : tft(tft), si4735(si4735), band(band), config(config), screenWidth(tft.width()), screenHeight(tft.height()), dialog(nullptr) {
         clearLastButton();
     }
 
