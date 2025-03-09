@@ -30,14 +30,12 @@ struct MemoryStatus_t {
 /**
  * A memóriahasználat mérésének tárolása
  */
-struct HeapMemoryMonitor {
+struct UsedHeapMemoryMonitor {
     uint32_t measurements[MEASUREMENTS_COUNT]; // A memóriahasználatot tároló tömb
-    uint8_t index;                             // Az aktuális mérési index
+    int8_t index = -1;                         // Az aktuális mérési index -1-re állítjuk be a kezdeti értéket!!
+    bool valid = false;
 
-    // A mérések száma (csak érvényes méréseket számol)
-    uint8_t validMeasurements;
-
-    HeapMemoryMonitor() : index(0), validMeasurements(0) {
+    UsedHeapMemoryMonitor() {
         // Kezdeti értékek beállítása 0-ra
         for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
             measurements[i] = 0;
@@ -46,53 +44,61 @@ struct HeapMemoryMonitor {
 
     // Adott heap használat mérésének hozzáadása
     void addMeasurement(uint32_t usedHeap) {
-        if (usedHeap > 0) {
-            measurements[index] = usedHeap;
-            validMeasurements = (validMeasurements < MEASUREMENTS_COUNT) ? validMeasurements + 1 : MEASUREMENTS_COUNT; // Valid mérések száma
-        } else {
-            measurements[index] = 0; // Ha a mérés nulla, akkor ne számoljuk
-        }
 
-        // Ha az index elérte a maximális értéket, az első elem is eldobásra kerül
+        // Ha az index elérte a maximális értéket, akkor elölről kezdjük
         index = (index + 1) % MEASUREMENTS_COUNT; // Körkörös indexelés
+
+        // Eltároljuk a mért Heap értéket
+        measurements[index] = usedHeap;
+
+        // Ha már van 2 adatunk, akkor rendben vagyunk
+        if (!valid and index > 0) {
+            valid = true;
+        }
     }
 
     // Kiszámítja az átlagos memóriahasználatot
     float getAverageUsedHeap() {
-        uint32_t total = 0;
-        uint8_t validCount = 0; // Az érvényes mérések száma
-        for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
-            if (measurements[i] > 0) { // Csak a nem nulla mérések
-                total += measurements[i];
-                validCount++;
-            }
+
+        // Legalább 2 mérés szükséges
+        if (!valid) {
+            return 0.0f;
         }
-        return validCount > 0 ? total / (float)validCount : 0;
+
+        uint32_t total = 0;
+        uint8_t count = valid ? MEASUREMENTS_COUNT : index;
+
+        for (uint8_t i = 0; i < count; i++) {
+            uint8_t currIndex = (index + i) % MEASUREMENTS_COUNT;
+            total += measurements[currIndex];
+        }
+
+        return static_cast<float>(total) / count;
     }
 
-    // Kiszámítja a legnagyobb növekedést
-    float getMaxIncrease() {
-        float maxIncrease = 0.0;
+    // Kiszámítja az előző méréshez képest a memóriahasználat változását
+    // Az előző és a legutóbbi mérés közötti különbség, legalább 2 mérés szükséges
+    // Lehet negatív is
+    int32_t getChangeFromPreviousMeasurement() {
 
-        // Legalább 2 valid mérés szükséges
-        if (validMeasurements > 1) {
-            for (uint8_t i = 1; i < MEASUREMENTS_COUNT; i++) {
-                // Csak akkor számoljuk, ha az előző mérés valid
-                if (measurements[i - 1] > 0 && measurements[i] > 0) {
-                    float increase = measurements[i] - measurements[i - 1];
-                    if (increase > maxIncrease) {
-                        maxIncrease = increase;
-                    }
-                }
-            }
+        if (!valid) {
+            return 0;
         }
 
-        return maxIncrease;
+        // Az előző mérés indexének helyes számítása körkörös puffer esetén
+        uint8_t prevIndex = (index == 0) ? MEASUREMENTS_COUNT - 1 : index - 1;
+        // DEBUG("value(%d) %.2f kB, prevValue(%d): %.2f kB -> canged: %.2f kB\n",
+        //       index, measurements[index] / 1024.0,
+        //       prevIndex, measurements[prevIndex] / 1024.0,
+        //       (static_cast<int32_t>(measurements[index]) - static_cast<int32_t>(measurements[prevIndex])) / 1024.0);
+
+        return measurements[index] - measurements[prevIndex];
     }
 };
 
 // Globális memóriafigyelő objektum, csak DEBUG módban
-HeapMemoryMonitor heapMemoryMonitor;
+UsedHeapMemoryMonitor usedHeapMemoryMonitor;
+
 #endif
 
 /**
@@ -118,8 +124,8 @@ MemoryStatus_t getMemoryStatus() {
     status.freeHeapPercent = (status.freeHeap * 100.0) / status.heapSize;
 
 #ifdef __DEBUG
-    // Mérési adat hozzáadása
-    heapMemoryMonitor.addMeasurement(status.usedHeap);
+    // Used Heap mért érték hozzáadása
+    usedHeapMemoryMonitor.addMeasurement(status.usedHeap);
 #endif
 
     return status;
@@ -130,6 +136,7 @@ MemoryStatus_t getMemoryStatus() {
  */
 #ifdef __DEBUG
 void debugMemoryInfo() {
+
     MemoryStatus_t status = getMemoryStatus(); // Adatok lekérése
 
     DEBUG("===== Memory info =====\n");
@@ -149,28 +156,14 @@ void debugMemoryInfo() {
           status.freeHeap, status.freeHeap / 1024.0, status.freeHeapPercent     // Heap
     );
 
-    // Memória szivárgás ellenőrzése
-    float averageUsedHeap = heapMemoryMonitor.getAverageUsedHeap();
-    float maxIncrease = heapMemoryMonitor.getMaxIncrease();
-
-    // Használt mérések számának lekérése
-    uint8_t usedMeasurements = 0;
-    for (uint8_t i = 0; i < MEASUREMENTS_COUNT; i++) {
-        if (heapMemoryMonitor.measurements[i] > 0) {
-            usedMeasurements++;
-        }
-    }
-
-    DEBUG("Heap usage:\n  Ave: %.2f kB, max grow: %.2f kB (%d/%d)\n",
-          averageUsedHeap / 1024.0,                                  // average
-          maxIncrease / 1024.0, usedMeasurements, MEASUREMENTS_COUNT // max grow
+    DEBUG("Heap usage:\n changed(from prev): %.2f kB, ave: %.2f kB - (%d/%d)\n",
+          usedHeapMemoryMonitor.getChangeFromPreviousMeasurement() / 1024.0, // Az előző méréshez képesti változás
+          usedHeapMemoryMonitor.getAverageUsedHeap() / 1024.0,               // average
+          usedHeapMemoryMonitor.index, MEASUREMENTS_COUNT                    // max grow
     );
 
-    if (maxIncrease > 1024) { // Ha a növekedés nagyobb mint 1 kB, akkor figyelmeztetünk
-        DEBUG("Warning! Possible memory leak!\n");
-    }
-
     DEBUG("---\n");
+    DEBUG("\n");
 }
 #endif
 

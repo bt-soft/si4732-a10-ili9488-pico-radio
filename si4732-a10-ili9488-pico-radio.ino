@@ -19,7 +19,7 @@ DisplayBase *pDisplay;
 Ticker rotaryTicker;
 
 #include "RotaryEncoder.h"
-#define ROTARY_ENCODER_TICKER_INTERVAL_MSEC 1 // 5 perc
+#define ROTARY_ENCODER_TICKER_INTERVAL_MSEC 1 // 1msec
 RotaryEncoder rotaryEncoder = RotaryEncoder(PIN_ENCODER_CLK, PIN_ENCODER_DT, PIN_ENCODER_SW);
 
 //------------------- beeper
