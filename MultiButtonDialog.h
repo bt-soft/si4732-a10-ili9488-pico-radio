@@ -25,21 +25,19 @@ private:
      * @param rowCount Hány sorra van szükség
      */
     void calculateButtonLayout(uint16_t maxRowWidth, uint8_t &buttonsPerRow, uint8_t &rowCount) {
+        buttonsPerRow = 0;
         uint16_t totalWidth = 0;
-        buttonsPerRow = 1;
 
-        // Megnézzük, hány gomb fér el egy sorban
-        totalWidth = buttons[0]->getWidth(); // Első gomb szélessége
-        for (uint8_t i = 1; i < buttonCount; i++) {
-            totalWidth += buttons[i]->getWidth() + DLG_BTN_GAP;
-            if (totalWidth > maxRowWidth) {
-                break;
+        // Próbáljuk feltölteni egy sort, amíg elférnek a gombok
+        for (uint8_t i = 0; i < buttonCount; i++) {
+            uint16_t nextWidth = totalWidth + buttons[i]->getWidth() + (buttonsPerRow > 0 ? DLG_BTN_GAP : 0);
+
+            if (nextWidth > maxRowWidth) {
+                break; // Ha már nem fér el, kilépünk
             }
-            buttonsPerRow++;
-        }
 
-        if (buttonsPerRow > 0) {
-            buttonsPerRow--;
+            totalWidth = nextWidth;
+            buttonsPerRow++;
         }
 
         rowCount = (buttonCount + buttonsPerRow - 1) / buttonsPerRow; // Felkerekítés
@@ -89,7 +87,7 @@ protected:
      */
     void buildButtonArray(const char *buttonLabels[], uint8_t buttonCount, ButtonCallback_t btnCb) {
 
-        if (!buttonLabels) {
+        if (!buttonLabels || buttonCount == 0) {
             return;
         }
 
