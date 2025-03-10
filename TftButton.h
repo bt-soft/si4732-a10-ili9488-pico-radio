@@ -3,6 +3,8 @@
 
 #include "utils.h"
 
+#include "EventManager.h"
+
 // Gomb állapotai
 typedef enum ButtonState_t {
     OFF,
@@ -76,6 +78,8 @@ private:
         // Meghívjuk a callback függvényt, ha van
         if (callback) {
             callback(id, label, type == PUSHABLE ? PUSHED : state);
+            EventManager::SensorEventData sensorData = {22.3, 55.4};
+            eventManager.publish(EventManager::SENSOR_UPDATE, &sensorData);
         }
     }
 

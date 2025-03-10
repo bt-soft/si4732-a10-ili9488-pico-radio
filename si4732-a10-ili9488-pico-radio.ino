@@ -44,12 +44,47 @@ Band band(si4735, config);
 //------------------- Runtime variables
 #include "RuntimeVars.h"
 
+//------------------- Event manager
+#include "EventManager.h"
+EventManager eventManager;
+
 //------------------- Memória információk megjelenítése
 #include "PicoMemoryInfo.h"
 #ifdef __DEBUG
 #define MEMORY_INFO_TICKER_INTERVAL_SECONDS 60 * 1 // 1 perc
 Ticker memoryInfoTicker;
 #endif
+//--------------------------------------------------------------------------------------------------------------------------------------
+
+void allEventLogger(const EventManager::EventData &event) {
+    switch (event.type) {
+    case EventManager::BUTTON_PRESS: {
+        auto *buttonData = static_cast<EventManager::ButtonEventData *>(event.data);
+        DEBUG("[Event] Esemény típusa: BUTTON_PRESS - Gomb ID: %d, Állapot: %d\n",
+              buttonData->buttonId, buttonData->pressed);
+        break;
+    }
+    case EventManager::SENSOR_UPDATE: {
+        auto *sensorData = static_cast<EventManager::SensorEventData *>(event.data);
+        DEBUG("[Event] Esemény típusa: SENSOR_UPDATE - Hőmérséklet: %.2f, Páratartalom: %.2f\n",
+              sensorData->temperature, sensorData->humidity);
+        break;
+    }
+    case EventManager::ERROR_EVENT: {
+        auto *errorData = static_cast<EventManager::ErrorEventData *>(event.data);
+        DEBUG("[Event] Esemény típusa: ERROR_EVENT - Hiba kód: %d, Üzenet: %s\n",
+              errorData->errorCode, errorData->message);
+        break;
+    }
+    case EventManager::ALL_EVENTS: {
+        DEBUG("[Event] Esemény típusa: ALL_EVENTS - Minden esemény figyelése\n");
+        break;
+    }
+    default:
+        DEBUG("[Event] Ismeretlen esemény típusa: %d\n", event.type);
+        break;
+    }
+}
 //--------------------------------------------------------------------------------------------------------------------------------------
 
 /**
@@ -166,6 +201,8 @@ void setup() {
         debugMemoryInfo();
     });
 #endif
+
+    eventManager.subscribe(EventManager::ALL_EVENTS, allEventLogger); // Minden eseményt figyel
 }
 
 /**
