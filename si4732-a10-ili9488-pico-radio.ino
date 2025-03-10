@@ -8,7 +8,7 @@
 //------------------ TFT
 #include <TFT_eSPI.h> // TFT_eSPI könyvtár
 TFT_eSPI tft;         // TFT objektum
-#include "ESP_free_fonts.h"
+// #include "ESP_free_fonts.h"
 
 #include "FmDisplay.h"
 DisplayBase *pDisplay;
@@ -123,7 +123,7 @@ void setup() {
     tft.init();
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
-    tft.setFreeFont(FF18);
+    // tft.setFreeFont(FF18);
 
     // Várakozás a soros port megnyitására
     //    debugWaitForSerial(&tft);
